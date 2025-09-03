@@ -3,8 +3,8 @@ import {
   DefaultApi,
   UsersApi,
   Configuration,
-} from '@jacantwell/kairos-api-client-ts';
-import { getAuthToken } from './auth';
+} from "@jacantwell/kairos-api-client-ts";
+import { getAuthToken } from "./auth";
 
 export class KairosApiClient {
   private config: Configuration;
@@ -13,11 +13,13 @@ export class KairosApiClient {
   private _users?: UsersApi;
 
   constructor(token?: string) {
+    console.log("API Base URL:", process.env.NEXT_PUBLIC_API_BASE_URL);
     this.config = new Configuration({
-      basePath: process.env.NEXT_PUBLIC_API_BASE_URL || 'https://7zpmbpgf7d.execute-api.eu-west-2.amazonaws.com',
+      basePath:
+        process.env.NEXT_PUBLIC_API_BASE_URL ||
+        "https://7zpmbpgf7d.execute-api.eu-west-2.amazonaws.com",
       baseOptions: {
         headers: {
-          'Content-Type': 'application/json',
           ...(token && { Authorization: `Bearer ${token}` }),
         },
       },
@@ -76,7 +78,7 @@ export class KairosApiClient {
 let clientInstance: KairosApiClient | null = null;
 
 export const getApiClient = (): KairosApiClient => {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     // Server-side: always create new instance
     return new KairosApiClient();
   }
@@ -84,7 +86,7 @@ export const getApiClient = (): KairosApiClient => {
   // Client-side: reuse instance
   if (!clientInstance) {
     const token = getAuthToken();
-    clientInstance = new KairosApiClient(token || '');  // TODO: Should '' be here?
+    clientInstance = new KairosApiClient(token || ""); // TODO: Should '' be here?
   }
 
   return clientInstance;
