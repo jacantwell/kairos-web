@@ -1,26 +1,59 @@
+@import url('https://fonts.googleapis.com/css2?family=Bungee&display=swap');
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+
+  --font-logo: 'Bungee';
+  --font-inter: 'Inter', sans-serif;
+  --color-primary-green-50: oklch(66.321% 0.17132 147.05);
+  --color-primary-green-100: oklch(61.798% 0.15849 147.18);
+  --color-primary-green-200: oklch(52.77% 0.13335 147.43);
+  --color-primary-green-300: oklch(43.354% 0.10749 147.27);
+  --color-primary-green-400: oklch(33.069% 0.07762 147.95);
+  --color-primary-green-500: oklch(22.319% 0.04529 148.71);
+  --color-primary-green-600: oklch(20.854% 0.04084 148.48);
+  --color-primary-green-700: oklch(19.363% 0.03629 148.2);
+  --color-primary-green-800: oklch(17.788% 0.03128 151.64);
+  --color-primary-green-900: oklch(16.214% 0.02684 152.05);
+  --color-primary-green-950: oklch(15.461% 0.02407 150.66);
+
+  --color-slate-50: oklch(59.865% 0.02945 264.32);
+  --color-slate-100: oklch(56.466% 0.0299 264.3);
+  --color-slate-200: oklch(49.472% 0.02599 263.07);
+  --color-slate-300: oklch(42.306% 0.02142 264.31);
+  --color-slate-400: oklch(35.116% 0.01709 262.27);
+  --color-slate-500: oklch(27.221% 0.01194 264.36);
+  --color-slate-600: oklch(24.257% 0.01054 260.69);
+  --color-slate-700: oklch(20.864% 0.00851 264.37);
+  --color-slate-800: oklch(17.739% 0.00442 264.46);
+  --color-slate-900: oklch(14.402% 0.00279 247.09);
+  --color-slate-950: oklch(12.101% 0.00386 245.47);
+
+  --color-grey-50: oklch(92.257% 0.00682 277.16);
+  --color-grey-100: oklch(88.994% 0.01094 280.46);
+  --color-grey-200: oklch(81.957% 0.01824 279);
+  --color-grey-300: oklch(75.061% 0.02451 277.82);
+  --color-grey-400: oklch(67.837% 0.03394 279.57);
+  --color-grey-500: oklch(60.612% 0.04116 278.47);
+  --color-grey-600: oklch(50.963% 0.04148 277.98);
+  --color-grey-700: oklch(41.806% 0.03351 278.17);
+  --color-grey-800: oklch(32.064% 0.02327 278.14);
+  --color-grey-900: oklch(21.504% 0.01186 277.89);
+  --color-grey-950: oklch(15.46% 0.00661 270.96);
+
+  --color-secondary-green-50: oklch(95.214% 0.01185 133.38);
+  --color-secondary-green-100: oklch(92.463% 0.01814 134.92);
+  --color-secondary-green-200: oklch(87.097% 0.03387 135.55);
+  --color-secondary-green-300: oklch(81.543% 0.0478 134.39);
+  --color-secondary-green-400: oklch(75.855% 0.06261 134.71);
+  --color-secondary-green-500: oklch(70.11% 0.0777 135.01);
+  --color-secondary-green-600: oklch(61.315% 0.08617 135.46);
+  --color-secondary-green-700: oklch(50.301% 0.06822 135.1);
+  --color-secondary-green-800: oklch(38.94% 0.04955 135.55);
+  --color-secondary-green-900: oklch(26.641% 0.03041 135.46);
+  --color-secondary-green-950: oklch(19.951% 0.0197 135.36);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-}
+/* @tailwind base;
+@tailwind components;
+@tailwind utilities; */
