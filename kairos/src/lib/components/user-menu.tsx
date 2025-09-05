@@ -15,7 +15,7 @@ export const UserMenu: React.FC = () => {
 
   return (
     <div className="flex items-center gap-4">
-      <span>Welcome, {user.username}</span>
+      <span>Welcome, {user.name}</span>
       <button
         onClick={logout}
         className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"

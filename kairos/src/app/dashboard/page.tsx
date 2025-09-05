@@ -43,7 +43,7 @@ export default function DashboardPage() {
                         Email
                       </dt>
                       <dd className="mt-1 text-sm text-gray-900">
-                        {user.username}
+                        {user.email}
                       </dd>
                     </div>
                   </dl>
