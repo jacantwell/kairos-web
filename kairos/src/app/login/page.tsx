@@ -21,7 +21,7 @@ export default function LoginPage() {
     const success = await login(credentials);
     if (success) {
       console.log("Login successful!");
-      router.push("/dashboard");
+      router.push("/home");
     }
   };
 
