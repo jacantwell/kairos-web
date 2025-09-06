@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "axios": "^1.11.0",
-    "kairos-api-client-ts": "^0.1.0",
+    "kairos-api-client-ts": "^0.2.1",
     "next": "15.5.0",
     "react": "19.1.0",
     "react-dom": "19.1.0"

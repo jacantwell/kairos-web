@@ -7,12 +7,14 @@ import { LogoWithText } from "@/lib/components/ui/logo";
 
 export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
   const api = useApi();
   const router = useRouter();
 
   const [userDetails, setUserDetails] = useState({
     email: "",
     password: "",
+    confirmed_password: "",
     name: "",
     phonenumber: "",
     country: "",
@@ -21,6 +23,13 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+
+    if (userDetails.password !== userDetails.confirmed_password) {
+      setPasswordError("Passwords do not match");
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const signupResponse = await api.users.registerUserApiV1UsersRegisterPost(
         {
@@ -74,6 +83,38 @@ export default function RegisterPage() {
                 placeholder="Password"
               />
             </div>
+            <div>
+              <input
+                type="password"
+                required
+                value={userDetails.confirmed_password}
+                onChange={(e) =>
+                  setUserDetails((prev) => ({
+                    ...prev,
+                    confirmed_password: e.target.value,
+                  }))
+                }
+                className="w-full px-4 py-3 border border-grey-300 placeholder-grey-400 text-grey-900 rounded-lg focus:outline-none focus:ring-primary-green-500 focus:border-primary-green-500 sm:text-sm"
+                placeholder="Confirm Password"
+              />
+            </div>
+            {passwordError && (
+              <div className="text-red-600 text-sm flex items-center gap-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zm-1 3a1 1 0 00-.993.883L9 10v3a1 1 0 001.993.117L11 13v-3a1 1 0 00-1-1z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                {passwordError}
+              </div>
+            )}
             <div>
               <input
                 type="name"
