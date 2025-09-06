@@ -53,7 +53,3 @@
   --color-secondary-green-900: oklch(26.641% 0.03041 135.46);
   --color-secondary-green-950: oklch(19.951% 0.0197 135.36);
 }
-
-/* @tailwind base;
-@tailwind components;
-@tailwind utilities; */
