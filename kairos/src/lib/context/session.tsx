@@ -9,7 +9,7 @@ import React, {
 } from "react";
 import { getApiClient, createServerApiClient } from "../api/client";
 import { getAuthToken, setAuthToken, clearAuthToken } from "../api/auth";
-import { User } from "@jacantwell/kairos-api-client-ts";
+import { User } from "kairos-api-client-ts";
 
 export interface SessionState {
   user: User | null;
