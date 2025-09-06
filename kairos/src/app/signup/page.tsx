@@ -1,6 +1,6 @@
 "use client";
 
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useApi } from "@/lib/api/hooks/use-api";
 import { LogoWithText } from "@/lib/components/ui/logo";
@@ -8,6 +8,7 @@ import { LogoWithText } from "@/lib/components/ui/logo";
 export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const api = useApi();
+  const router = useRouter();
 
   const [userDetails, setUserDetails] = useState({
     email: "",
@@ -31,8 +32,7 @@ export default function RegisterPage() {
         }
       );
       if (signupResponse.status == 200) {
-        console.log("Login successful!");
-        redirect("/login");
+        router.push("/unverified");
       }
     } finally {
       setIsLoading(false);

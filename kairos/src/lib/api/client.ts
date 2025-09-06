@@ -3,7 +3,7 @@ import {
   DefaultApi,
   UsersApi,
   Configuration,
-} from "@jacantwell/kairos-api-client-ts";
+} from "kairos-api-client-ts";
 import { getAuthToken } from "./auth";
 
 export class KairosApiClient {

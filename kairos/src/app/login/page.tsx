@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useSession } from "@/lib/context/session";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Logo, LogoWithText } from "@/lib/components/ui/logo";
 
 export default function LoginPage() {
@@ -12,6 +12,7 @@ export default function LoginPage() {
     email: "",
     password: "",
   });
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,7 +21,7 @@ export default function LoginPage() {
     const success = await login(credentials);
     if (success) {
       console.log("Login successful!");
-      redirect("/dashboard");
+      router.push("/dashboard");
     }
   };
 
