@@ -1,28 +1,37 @@
 import { getApiClient } from "./client";
+
 const ACCESS_TOKEN_KEY = "kairos_access_token";
+const REFRESH_TOKEN_KEY = "kairos_refresh_token";
 
-export const getAuthToken = (): string | null => {
+export const getAccessToken = (): string | null => {
   if (typeof window === "undefined") return null;
-
   return localStorage.getItem(ACCESS_TOKEN_KEY);
 };
 
-export const setAuthToken = (token: string) => {
-  if (typeof window === "undefined") return;
-
-  localStorage.setItem(ACCESS_TOKEN_KEY, token);
-
-  // Update existing client
-  const client = getApiClient();
-  client.updateToken(token);
+export const getRefreshToken = (): string | null => {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem(REFRESH_TOKEN_KEY);
 };
 
-export const clearAuthToken = () => {
+export const setAuthTokens = (
+  accessToken: string,
+  refreshToken: string
+): void => {
+  if (typeof window === "undefined") return;
+
+  localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+  localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+};
+
+export const clearAuthTokens = (): void => {
   if (typeof window === "undefined") return;
 
   localStorage.removeItem(ACCESS_TOKEN_KEY);
-
-  // Clear client auth
+  localStorage.removeItem(REFRESH_TOKEN_KEY);
+  
+  // You might not need the client-side clearAuth anymore, but it doesn't hurt.
   const client = getApiClient();
-  client.clearAuth();
+  if (client.clearAuth) {
+    client.clearAuth();
+  }
 };

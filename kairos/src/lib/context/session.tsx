@@ -7,9 +7,13 @@ import React, {
   useState,
   ReactNode,
 } from "react";
-import { getApiClient, createServerApiClient } from "../api/client";
-import { getAuthToken, setAuthToken, clearAuthToken } from "../api/auth";
-import { User } from "kairos-api-client-ts";
+import { getApiClient } from "../api/client";
+import {
+  getAccessToken,
+  setAuthTokens,
+  clearAuthTokens,
+} from "../api/auth";
+import { User, Tokens } from "kairos-api-client-ts";
 
 export interface SessionState {
   user: User | null;
@@ -65,38 +69,37 @@ export const SessionProvider: React.FC<SessionProviderProps> = ({
 
   const initializeSession = async () => {
     try {
-      const token = getAuthToken();
+      const token = getAccessToken(); // Use getAccessToken
 
       if (!token) {
-        setState((prev) => ({
-          ...prev,
-          isLoading: false,
-        }));
+        setState((prev) => ({ ...prev, isLoading: false }));
         return;
       }
 
-      // Validate token and get user info
+      // getApiClient() provides the client with interceptors.
+      // If the token is expired, the interceptor will try to refresh it.
+      // If refresh fails, an error will be thrown and caught below.
       const apiClient = getApiClient();
       const userResponse =
         await apiClient.users.getCurrentUserApiV1UsersMeGet();
 
       setState({
         user: userResponse.data,
-        token,
+        token: getAccessToken(), // Get the (potentially refreshed) token
         isAuthenticated: true,
         isLoading: false,
         error: null,
       });
     } catch (error) {
-      // Token might be invalid/expired
+      // This catch block will run if the initial token is invalid AND refreshing fails.
       console.error("Session initialization failed:", error);
-      clearAuthToken();
+      clearAuthTokens();
       setState({
         user: null,
         token: null,
         isAuthenticated: false,
         isLoading: false,
-        error: "Session expired",
+        error: "Session expired. Please log in again.",
       });
     }
   };
@@ -109,23 +112,25 @@ export const SessionProvider: React.FC<SessionProviderProps> = ({
       const authResponse = await apiClient.auth.loginApiV1AuthTokenPost(
         credentials.email,
         credentials.password,
-        "password",
+        "password"
       );
+      
+      const { access_token, refresh_token } = authResponse.data as Tokens;
 
-      if (!authResponse.data.access_token) {
-        throw new Error("No token received");
+      if (!access_token || !refresh_token) {
+        throw new Error("Login response did not include tokens.");
       }
 
-      // Store token
-      setAuthToken(authResponse.data.access_token);
+      // Store both tokens using our new function
+      setAuthTokens(access_token, refresh_token);
 
-      // Get user details
+      // Get user details (will use the new access token via the interceptor)
       const userResponse =
         await apiClient.users.getCurrentUserApiV1UsersMeGet();
 
       setState({
         user: userResponse.data,
-        token: authResponse.data.token,
+        token: access_token, // Store the access token in the session state
         isAuthenticated: true,
         isLoading: false,
         error: null,
@@ -134,27 +139,26 @@ export const SessionProvider: React.FC<SessionProviderProps> = ({
       return true;
     } catch (error: any) {
       console.error("Login failed:", error);
+      const errorMessage =
+        error.response?.data?.detail || error.message || "Login failed";
       setState((prev) => ({
         ...prev,
         isLoading: false,
-        error: error.message || "Login failed",
+        error: errorMessage,
       }));
       return false;
     }
   };
 
   const logout = async (): Promise<void> => {
-      setState((prev) => ({ ...prev, isLoading: true }));
-
-      // Clear state
-      clearAuthToken();
-      setState({
-        user: null,
-        token: null,
-        isAuthenticated: false,
-        isLoading: false,
-        error: null,
-      });
+    clearAuthTokens(); // Use the new function to clear both tokens
+    setState({
+      user: null,
+      token: null,
+      isAuthenticated: false,
+      isLoading: false,
+      error: null,
+    });
   };
 
   const refreshUser = async (): Promise<void> => {
@@ -168,6 +172,7 @@ export const SessionProvider: React.FC<SessionProviderProps> = ({
       setState((prev) => ({
         ...prev,
         user: userResponse.data,
+        token: getAccessToken(), // Update token in case it was refreshed
         error: null,
       }));
     } catch (error: any) {
