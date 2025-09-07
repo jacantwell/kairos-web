@@ -1,14 +1,17 @@
-// kairos/src/app/home/page.tsx
+// kairos/src/app/home/page.tsx - Updated with Navigation
 "use client";
 
 import { AuthGuard } from "@/lib/components/auth";
-import { UserMenu } from "@/lib/components/user-menu";
+import { Navigation } from "@/lib/components/navigation";
 import { JourneyMap } from "@/lib/components/journey/map";
+import { ActiveJourneyBanner } from "@/lib/components/journey/active-journey-banner";
+import { useActiveJourney } from "@/lib/api/hooks/use-active-journey";
 import { useState } from "react";
 
 export default function HomePage() {
   const [journeyPoints, setJourneyPoints] = useState<JourneyPoint[]>([]);
   const [isAddingPoint, setIsAddingPoint] = useState(false);
+  const { activeJourney, isLoading } = useActiveJourney()
 
   const handleAddPoint = (point: JourneyPoint) => {
     setJourneyPoints(prev => [...prev, point]);
@@ -23,32 +26,29 @@ export default function HomePage() {
     console.log("Point deleted:", id);
   };
 
+  const navigationActions = (
+    <button
+      onClick={() => setIsAddingPoint(!isAddingPoint)}
+      className={`px-4 py-2 rounded-lg transition-colors ${
+        isAddingPoint
+          ? 'bg-red-500 text-white hover:bg-red-600'
+          : 'bg-primary-green-500 text-white hover:bg-primary-green-600'
+      }`}
+    >
+      {isAddingPoint ? 'Cancel Adding' : 'Add Point'}
+    </button>
+  );
+
   return (
     <AuthGuard>
       <div className="min-h-screen bg-gray-50">
-        <header className="bg-white shadow">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between h-16 items-center">
-              <h1 className="text-xl font-semibold">Home</h1>
-              <div className="flex items-center gap-4">
-                <button
-                  onClick={() => setIsAddingPoint(!isAddingPoint)}
-                  className={`px-4 py-2 rounded-lg transition-colors ${
-                    isAddingPoint
-                      ? 'bg-red-500 text-white hover:bg-red-600'
-                      : 'bg-primary-green-500 text-white hover:bg-primary-green-600'
-                  }`}
-                >
-                  {isAddingPoint ? 'Cancel Adding' : 'Add Point'}
-                </button>
-                <UserMenu />
-              </div>
-            </div>
-          </div>
-        </header>
+        <Navigation title="Map" actions={navigationActions} />
 
-        <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <main className="max-w-7xl mx-auto py-1 sm:px-6 lg:px-8">
           <div className="px-4 sm:px-0">
+            <div className="py-2" >
+              <ActiveJourneyBanner journey={activeJourney} isLoading = {isLoading} />
+            </div>
             <JourneyMap
               journeyPoints={journeyPoints}
               isAddingPoint={isAddingPoint}
