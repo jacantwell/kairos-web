@@ -5,13 +5,13 @@ import { AuthGuard } from "@/lib/components/auth";
 import { Navigation } from "@/lib/components/navigation";
 import { JourneyMap } from "@/lib/components/journey/map";
 import { ActiveJourneyBanner } from "@/lib/components/journey/active-journey-banner";
-import { useActiveJourney } from "@/lib/api/hooks/use-active-journey";
+import { useJourneys } from "@/lib/api/hooks/use-journeys";
 import { useState } from "react";
 
 export default function HomePage() {
   const [journeyPoints, setJourneyPoints] = useState<JourneyPoint[]>([]);
   const [isAddingPoint, setIsAddingPoint] = useState(false);
-  const { activeJourney, isLoading } = useActiveJourney()
+  const { activeJourney, isJourneysLoading } = useJourneys()
 
   const handleAddPoint = (point: JourneyPoint) => {
     setJourneyPoints(prev => [...prev, point]);
@@ -47,7 +47,7 @@ export default function HomePage() {
         <main className="max-w-7xl mx-auto py-1 sm:px-6 lg:px-8">
           <div className="px-4 sm:px-0">
             <div className="py-2" >
-              <ActiveJourneyBanner journey={activeJourney} isLoading = {isLoading} />
+              <ActiveJourneyBanner journey={activeJourney} isLoading = {isJourneysLoading} />
             </div>
             <JourneyMap
               journeyPoints={journeyPoints}

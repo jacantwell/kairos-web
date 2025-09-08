@@ -10,35 +10,15 @@ import { useApi } from "@/lib/api/hooks/use-api";
 import { useSession } from "@/lib/context/session";
 import { Journey } from "kairos-api-client-ts";
 import { Navigation } from "@/lib/components/navigation";
+import { useJourneys } from "@/lib/api/hooks/use-journeys";
 
 export default function JourneysPage() {
-  const [journeys, setJourneys] = useState<Journey[]>([]);
+  const {activeJourney, journeys, isJourneysLoading, loadJourneys} = useJourneys()
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const api = useApi();
   const { user } = useSession();
-
-  // Load user's journeys
-  const loadJourneys = async () => {
-    if (!user?._id) return;
-    
-    try {
-      setIsLoading(true);
-      setError(null);
-      const response = await api.users.getUserJourneysApiV1UsersUserIdJourneysGet(user._id);
-      
-      // The API returns journeys in response.data
-      if (response.data) {
-        setJourneys(Array.isArray(response.data) ? response.data : []);
-      }
-    } catch (err: any) {
-      console.error("Failed to load journeys:", err);
-      setError(err.message || "Failed to load journeys");
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   // Load journeys when component mounts or user changes
   useEffect(() => {
@@ -60,7 +40,8 @@ export default function JourneysPage() {
       const response = await api.journeys.createJourneyApiV1JourneysPost(newJourney);
       
       if (response.data) {
-        setJourneys(prev => [response.data, ...prev]);
+        // if success reload journeys
+        loadJourneys();
         setIsCreateModalOpen(false);
       }
     } catch (err: any) {
@@ -70,11 +51,19 @@ export default function JourneysPage() {
   };
 
   const handleDeleteJourney = async (journeyId: string) => {
-    // Note: The API doesn't seem to have a delete endpoint yet
-    // This would need to be implemented on the backend
-    console.log("Delete journey:", journeyId);
-    // For now, just remove from local state
-    setJourneys(prev => prev.filter(j => j._id !== journeyId));
+    try {
+
+      const response = await api.journeys.deleteJourneyApiV1JourneysJourneyIdDelete(journeyId)
+      
+      if (response.data) {
+        // if success reload journeys
+        loadJourneys();
+        setIsCreateModalOpen(false);
+      }
+    } catch (err: any) {
+      console.error("Failed to delete journey:", err);
+      setError(err.message || "Failed to delete journey");
+    }
   };
 
   const handleToggleActive = async (journeyId: string, active: boolean) => {
@@ -83,9 +72,9 @@ export default function JourneysPage() {
     console.log("Toggle active:", journeyId, active);
     
     // For now, just update local state
-    setJourneys(prev => prev.map(j => 
-      j._id === journeyId ? { ...j, active } : j
-    ));
+    // setJourneys(prev => prev.map(j => 
+    //   j._id === journeyId ? { ...j, active } : j
+    // ));
   };
 
   return (
@@ -118,7 +107,7 @@ export default function JourneysPage() {
 
             <JourneyList 
               journeys={journeys}
-              isLoading={isLoading}
+              isLoading={isJourneysLoading}
               onDelete={handleDeleteJourney}
               onToggleActive={handleToggleActive}
               onRefresh={loadJourneys}

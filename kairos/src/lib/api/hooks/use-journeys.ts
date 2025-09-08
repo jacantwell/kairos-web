@@ -1,4 +1,3 @@
-// kairos/src/lib/hooks/use-active-journey.ts
 "use client";
 
 import { useState, useEffect } from "react";
@@ -6,15 +5,16 @@ import { Journey } from "kairos-api-client-ts";
 import { useApi } from "@/lib/api/hooks/use-api";
 import { useSession } from "@/lib/context/session";
 
-export function useActiveJourney() {
+export function useJourneys() {
   const [activeJourney, setActiveJourney] = useState<Journey | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [journeys, setJourneys] = useState<Journey[]>([])
+  const [isJourneysLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
   const api = useApi();
   const { user } = useSession();
 
-  const loadActiveJourney = async () => {
+  const loadJourneys = async () => {
     if (!user?._id) {
       setActiveJourney(null);
       return;
@@ -26,16 +26,17 @@ export function useActiveJourney() {
       
       // Get user's journeys and find the active one
       const response = await api.users.getUserJourneysApiV1UsersUserIdJourneysGet(user._id);
-      console.log(response)
-      if (response.data && Array.isArray(response.data)) {
-        const activeTrip = response.data.find((journey: Journey) => journey.active);
+      setJourneys(response.data)
+
+      if (journeys) {
+        const activeTrip = journeys.find((journey: Journey) => journey.active);
         setActiveJourney(activeTrip || null);
       } else {
         setActiveJourney(null);
       }
     } catch (err: any) {
-      console.error("Failed to load active journey:", err);
-      setError(err.message || "Failed to load active journey");
+      console.error("Failed to load journeys:", err);
+      setError(err.message || "Failed to load journeys");
       setActiveJourney(null);
     } finally {
       setIsLoading(false);
@@ -44,12 +45,12 @@ export function useActiveJourney() {
 
   // Load active journey when user changes
   useEffect(() => {
-    loadActiveJourney();
+    loadJourneys();
   }, [user?._id]);
 
   // Function to refresh the active journey (useful when journeys change)
   const refreshActiveJourney = () => {
-    loadActiveJourney();
+    loadJourneys();
   };
 
   // Function to set a journey as active (optimistic update)
@@ -64,8 +65,10 @@ export function useActiveJourney() {
 
   return {
     activeJourney,
-    isLoading,
+    journeys,
+    isJourneysLoading,
     error,
+    loadJourneys,
     refreshActiveJourney,
     setAsActive,
     clearActive,
