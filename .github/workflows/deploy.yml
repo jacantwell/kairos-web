@@ -85,7 +85,7 @@ jobs:
         id: global-output
         run: |
           DISTRIBUTION_ID=$(aws cloudformation describe-stacks --stack-name $GLOBAL_STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='distributionId'].OutputValue" --output text)
-          distribuTION_ARN=$(aws cloudformation describe-stacks --stack-name $GLOBAL_STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='distributionArn'].OutputValue" --output text)
+          DISTRIBUTION_ID=$(aws cloudformation describe-stacks --stack-name $GLOBAL_STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='distributionArn'].OutputValue" --output text)
           # Get the OAI ID
           OAI_ID=$(aws cloudformation describe-stack-resource --stack-name $GLOBAL_STACK_NAME --logical-resource-id CloudFrontOriginAccessIdentity --query "StackResourceDetail.PhysicalResourceId" --output text)
           echo "distribution_id=$DISTRIBUTION_ID" >> $GITHUB_OUTPUT
