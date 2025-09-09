@@ -1,24 +1,28 @@
 // kairos/src/lib/components/journey/add-point-modal.tsx
 import { useState } from "react";
-import { JourneyPoint } from "@/app/home/page";
-
+import { Marker, Coordinates } from "kairos-api-client-ts";
+import { MarkerMarkerTypeEnum } from "kairos-api-client-ts";
+import { useJourneys } from "@/lib/api/hooks/use-journeys";
+import { MapPinPen } from "lucide-react";
 interface AddPointModalProps {
-  latitude: number;
-  longitude: number;
-  onConfirm: (point: JourneyPoint) => void;
+  coordinates: number[]
+  onConfirm: (point: Marker) => void;
   onCancel: () => void;
 }
 
 export function AddPointModal({
-  latitude,
-  longitude,
+  coordinates,
   onConfirm,
   onCancel,
 }: AddPointModalProps) {
+  const { activeJourney } = useJourneys();
+
   const [formData, setFormData] = useState({
+    type: "plan",
     name: "",
-    description: "",
-    type: "waypoint" as JourneyPoint['type'],
+    notes: "",
+    estimateTime: "",
+    arrival: Date.now().toString().slice(0, 10), // YYYY-MM-DD
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -30,20 +34,21 @@ export function AddPointModal({
       return;
     }
 
-    setIsSubmitting(true);
+    // setIsSubmitting(true);
 
     try {
-      const newPoint: JourneyPoint = {
-        id: `point_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      const newPoint: Marker = {
         name: formData.name.trim(),
-        description: formData.description.trim(),
-        latitude,
-        longitude,
-        type: formData.type,
-        dateAdded: new Date(),
+        journey_id: activeJourney?._id || "",
+        notes: formData.notes.trim(),
+        coordinates: {type: "Point", coordinates} as Coordinates,
+        marker_type: formData.type as MarkerMarkerTypeEnum,
+        estimated_time: formData.type === 'plan' ? formData.estimateTime.trim() : undefined,
+        timestamp: formData.type === 'past' ? new Date(formData.arrival).toDateString() : undefined,
       };
 
       onConfirm(newPoint);
+      onCancel()  // Closes the modal
     } catch (error) {
       console.error('Error creating point:', error);
       // Handle error - you might want to show an error message
@@ -63,13 +68,11 @@ export function AddPointModal({
   };
 
   const pointTypeOptions = [
-    { value: 'waypoint', label: 'Waypoint', icon: '📍' },
-    { value: 'camp', label: 'Campsite', icon: '🏕️' },
-    { value: 'food', label: 'Food/Restaurant', icon: '🍽️' },
-    { value: 'water', label: 'Water Source', icon: '💧' },
-    { value: 'repair', label: 'Bike Repair', icon: '🔧' },
-    { value: 'scenic', label: 'Scenic View', icon: '📷' },
+    { value: 'plan', label: 'Plan', },
+    { value: 'past', label: 'Past' },
   ];
+
+  const [latitude, longitude] = coordinates; // Note: GeoJSON format is [lng, lat]
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -119,24 +122,58 @@ export function AddPointModal({
             >
               {pointTypeOptions.map(option => (
                 <option key={option.value} value={option.value}>
-                  {option.icon} {option.label}
+                  {option.label}
                 </option>
               ))}
             </select>
           </div>
 
+          {(formData.type === 'plan') && (
+            <div>
+              <label htmlFor="estimateTime" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                ETA
+              </label>
+              <input
+                type="Date"
+                id="estimateTime"
+                name="estimateTime"
+                value={formData.estimateTime}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-green-500 focus:border-primary-green-500 dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+                placeholder="e.g., 2 hours, 30 mins"
+                disabled={isSubmitting}
+              />
+            </div>
+          )}
+          {(formData.type === 'past') && (
+            <div>
+              <label htmlFor="arrival" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Date
+              </label>
+              <input
+                type="date"
+                id="arrival"
+                name="arrival"
+                value={formData.arrival}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-green-500 focus:border-primary-green-500 dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+                disabled={isSubmitting}
+              />
+            </div>
+          )}
+
           <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Description
+            <label htmlFor="notes" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Notes
             </label>
             <textarea
-              id="description"
-              name="description"
-              value={formData.description}
+              id="notes"
+              name="notes"
+              value={formData.notes}
               onChange={handleInputChange}
               rows={3}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-green-500 focus:border-primary-green-500 dark:bg-slate-700 dark:border-slate-600 dark:text-white"
-              placeholder="Optional description or notes"
+              placeholder="Optional notes"
               disabled={isSubmitting}
             />
           </div>
