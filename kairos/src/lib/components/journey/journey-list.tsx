@@ -18,13 +18,13 @@ export function JourneyList({
   onToggleActive,
   onRefresh 
 }: JourneyListProps) {
-  const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('all');
+  const [filter, setFilter] = useState<'all' | 'completed'>('all');
   const [sortBy, setSortBy] = useState<'created' | 'name'>('created');
 
   // Filter journeys
   const filteredJourneys = journeys.filter(journey => {
-    if (filter === 'active') return journey.active;
-    if (filter === 'inactive') return !journey.active;
+    if (filter === 'completed') return journey.completed;
+    // if (filter === 'uncompleted') return !journey.completed;
     return true;
   });
 
@@ -106,25 +106,25 @@ export function JourneyList({
                 All ({journeys.length})
               </button>
               <button
-                onClick={() => setFilter('active')}
+                onClick={() => setFilter('completed')}
                 className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
-                  filter === 'active' 
+                  filter === 'completed' 
                     ? 'bg-primary-green-500 text-white' 
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
-                Active ({journeys.filter(j => j.active).length > 0 ? '1' : '0'})
+                Completed ({journeys.filter(j => j.completed).length > 0 ? '1' : '0'})
               </button>
-              <button
+              {/* <button
                 onClick={() => setFilter('inactive')}
                 className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
                   filter === 'inactive' 
                     ? 'bg-primary-green-500 text-white' 
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
-              >
-                Inactive ({journeys.filter(j => !j.active).length})
-              </button>
+              > */}
+                {/* Inactive ({journeys.filter(j => !j.active).length})
+              </button> */}
             </div>
 
             {/* Sort dropdown */}

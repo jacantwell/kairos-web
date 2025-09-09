@@ -17,6 +17,7 @@ export function useJourneys() {
   const loadJourneys = async () => {
     if (!user?._id) {
       setActiveJourney(null);
+      setJourneys([]);
       return;
     }
 
@@ -26,41 +27,92 @@ export function useJourneys() {
       
       // Get user's journeys and find the active one
       const response = await api.users.getUserJourneysApiV1UsersUserIdJourneysGet(user._id);
-      setJourneys(response.data)
+      const fetchedJourneys = response.data || [];
+      
+      setJourneys(fetchedJourneys);
 
-      if (journeys) {
-        const activeTrip = journeys.find((journey: Journey) => journey.active);
-        setActiveJourney(activeTrip || null);
-      } else {
-        setActiveJourney(null);
-      }
+      // Find and set the active journey from the fetched journeys
+      const activeTrip = fetchedJourneys.find((journey: Journey) => journey.active);
+      setActiveJourney(activeTrip || null);
+
     } catch (err: any) {
       console.error("Failed to load journeys:", err);
       setError(err.message || "Failed to load journeys");
       setActiveJourney(null);
+      setJourneys([]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Load active journey when user changes
+  // Load journeys when user changes
   useEffect(() => {
-    loadJourneys();
+    if (user?._id) {
+      loadJourneys();
+    } else {
+      // Clear state when user is not available
+      setJourneys([]);
+      setActiveJourney(null);
+      setError(null);
+    }
   }, [user?._id]);
 
-  // Function to refresh the active journey (useful when journeys change)
-  const refreshActiveJourney = () => {
-    loadJourneys();
+  // Function to refresh the journeys (useful when journeys change)
+  const refreshJourneys = () => {
+    return loadJourneys();
   };
 
   // Function to set a journey as active (optimistic update)
   const setAsActive = (journey: Journey) => {
+    // Update local state optimistically
     setActiveJourney(journey);
+    setJourneys(prev => prev.map(j => 
+      j._id === journey._id 
+        ? { ...j, active: true }
+        : { ...j, active: false }
+    ));
   };
 
   // Function to clear active journey (when it becomes inactive)
   const clearActive = () => {
     setActiveJourney(null);
+    setJourneys(prev => prev.map(j => ({ ...j, active: false })));
+  };
+
+  // Function to add a new journey to the local state
+  const addJourney = (newJourney: Journey) => {
+    setJourneys(prev => [newJourney, ...prev]);
+    // If the new journey is active, set it as the active journey
+    if (newJourney.active) {
+      setActiveJourney(newJourney);
+    }
+  };
+
+  // Function to remove a journey from local state
+  const removeJourney = (journeyId: string) => {
+    console.log("Removing journey from local state:", journeyId);
+    setJourneys(prev => {
+      const updated = prev.filter(j => j._id !== journeyId);
+      console.log("Journeys after removal:", updated.length, "items");
+      return updated;
+    });
+    // If the removed journey was active, clear the active journey
+    if (activeJourney?._id === journeyId) {
+      console.log("Removed journey was active, clearing active journey");
+      setActiveJourney(null);
+    }
+  };
+
+  // Function to update a journey in local state
+  const updateJourney = (updatedJourney: Journey) => {
+    setJourneys(prev => prev.map(j => 
+      j._id === updatedJourney._id ? updatedJourney : j
+    ));
+    
+    // Update active journey if it's the one being updated
+    if (activeJourney?._id === updatedJourney._id) {
+      setActiveJourney(updatedJourney);
+    }
   };
 
   return {
@@ -69,8 +121,11 @@ export function useJourneys() {
     isJourneysLoading,
     error,
     loadJourneys,
-    refreshActiveJourney,
+    refreshJourneys, // Renamed for clarity
     setAsActive,
     clearActive,
+    addJourney,
+    removeJourney,
+    updateJourney,
   };
 }

@@ -97,8 +97,12 @@ axiosInstance.interceptors.response.use(
 
       // Use a clean Axios instance for the refresh call to avoid a recursive interceptor loop.
       const refreshClient = axios.create({ baseURL: API_BASE_URL });
+      const formData = new FormData();
+      formData.append("refresh_token", refreshToken);
+
       const { data } = await refreshClient.post<Tokens>(
-        `/api/v1/auth/refresh?refresh_token=${encodeURIComponent(refreshToken)}`
+        `/api/v1/auth/refresh`,
+        formData
       );
 
       const { access_token: newAccessToken, refresh_token: newRefreshToken } =
@@ -108,7 +112,7 @@ axiosInstance.interceptors.response.use(
       if (originalRequest.headers) {
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
       }
-      
+
       processQueue(null, newAccessToken);
       return axiosInstance(originalRequest);
     } catch (refreshError: any) {
@@ -132,42 +136,23 @@ class ApiClient {
   public users: UsersApi;
   public journeys: JourneysApi;
   public default: DefaultApi;
-  public clearAuth: () => void; // Keep for compatibility with original auth.ts
+  public clearAuth: () => void;
 
   constructor() {
     this.auth = new AuthenticationApi(config, undefined, axiosInstance);
     this.users = new UsersApi(config, undefined, axiosInstance);
     this.journeys = new JourneysApi(config, undefined, axiosInstance);
     this.default = new DefaultApi(config, undefined, axiosInstance);
-    this.clearAuth = () => { /* No longer needs to do anything */ };
+    this.clearAuth = () => {};
   }
 }
 
 let clientInstance: ApiClient | null = null;
 
 export const getApiClient = (): ApiClient => {
-  if (typeof window === "undefined") {
-    // Server-side: create a new instance for each request.
-    return new ApiClient();
-  }
   // Client-side: use a singleton pattern to reuse the instance.
   if (!clientInstance) {
     clientInstance = new ApiClient();
   }
   return clientInstance;
-};
-
-export const createServerApiClient = (token?: string) => {
-  // Note: This server-side client will NOT have the automatic token refresh logic.
-  const serverAxios = axios.create();
-  if (token) {
-    serverAxios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-  }
-  const serverConfig = new Configuration({ basePath: API_BASE_URL });
-  return {
-    auth: new AuthenticationApi(serverConfig, undefined, serverAxios),
-    users: new UsersApi(serverConfig, undefined, serverAxios),
-    journeys: new JourneysApi(serverConfig, undefined, serverAxios),
-    default: new DefaultApi(serverConfig, undefined, serverAxios),
-  };
 };
