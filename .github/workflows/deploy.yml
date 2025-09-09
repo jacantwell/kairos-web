@@ -37,7 +37,7 @@ jobs:
       - name: Deploy Initial S3 Buckets (without policies)
         run: |
           aws cloudformation deploy \
-            --template-file frontend/template-regional.yaml \
+            --template-file template-regional.yaml \
             --stack-name $REGIONAL_STACK_NAME \
             --parameter-overrides \
               DomainName=${{ vars.DOMAIN_NAME }} \
@@ -72,7 +72,7 @@ jobs:
       - name: Deploy CloudFront and Related Resources
         run: |
           aws cloudformation deploy \
-            --template-file frontend/template-global.yaml \
+            --template-file template-global.yaml \
             --stack-name $GLOBAL_STACK_NAME \
             --parameter-overrides \
               DomainName=${{ vars.DOMAIN_NAME }} \
@@ -119,7 +119,7 @@ jobs:
           echo "Using OAI ID: $OAI_ID"
           
           aws cloudformation deploy \
-            --template-file frontend/template-regional.yaml \
+            --template-file template-regional.yaml \
             --stack-name $REGIONAL_STACK_NAME \
             --parameter-overrides \
               DomainName=${{ vars.DOMAIN_NAME }} \
