@@ -5,8 +5,9 @@ import { useState } from "react";
 import { useApi } from "@/lib/api/hooks/use-api";
 import { Logo } from "@/lib/components/ui/logo";
 import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
-export default function ForgotPasswordPage() {
+function ForgotPassword() {
   const api = useApi();
   const searchParams = useSearchParams();
   const token = searchParams.get("token") || "";
@@ -130,5 +131,14 @@ export default function ForgotPasswordPage() {
         )}
       </div>
     </div>
+  );
+}
+
+
+export default function ForgotPasswordPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ForgotPassword />
+    </Suspense>
   );
 }

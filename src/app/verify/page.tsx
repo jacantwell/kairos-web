@@ -4,8 +4,9 @@ import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useApi } from "@/lib/api/hooks/use-api";
 import { Logo } from "@/lib/components/ui/logo";
+import { Suspense } from "react";
 
-export default function VerifyPage() {
+function Verify() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
   const api = useApi();
@@ -57,7 +58,7 @@ export default function VerifyPage() {
     <div className="min-h-screen flex items-center justify-center bg-grey-50 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full p-8 bg-white rounded-xl shadow-lg space-y-8">
         <div className="text-center space-y-4">
-          <Logo variant="primary" size="lg" />
+          <Logo size="lg" />
         </div>
         <div className="animate-fade-in items-center text-center space-y-6">
           {isVerifying ? (
@@ -86,5 +87,13 @@ export default function VerifyPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function VerifyPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <Verify />
+    </Suspense>
   );
 }
