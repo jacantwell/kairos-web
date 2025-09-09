@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useSession } from "@/lib/context/session";
 import { useRouter } from "next/navigation";
 import { Logo } from "@/lib/components/ui/logo";
+import { LoadingSpinner } from "@/lib/components/ui/loading";
 
 export default function LoginPage() {
   const { login, isLoading, error, clearError } = useSession();
@@ -12,18 +13,31 @@ export default function LoginPage() {
     email: "",
     password: "",
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Prevent double submission
+    if (isSubmitting || isLoading) return;
+    
     clearError();
+    setIsSubmitting(true);
 
-    const success = await login(credentials);
-    if (success) {
-      console.log("Login successful!");
-      router.push("/home");
+    try {
+      const success = await login(credentials);
+      if (success) {
+        console.log("Login successful!");
+        router.push("/home");
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      setIsSubmitting(false);
     }
   };
+
+  const isFormLoading = isSubmitting || isLoading;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-grey-50 px-4 sm:px-6 lg:px-8">
@@ -41,9 +55,9 @@ export default function LoginPage() {
         <div className="animate-fade-in">
           <form className="space-y-6" onSubmit={handleSubmit}>
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center gap-3">
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center gap-3 animate-fade-in">
                 <svg
-                  className="w-5 h-5 text-red-500"
+                  className="w-5 h-5 text-red-500 flex-shrink-0"
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >
@@ -53,7 +67,17 @@ export default function LoginPage() {
                     clipRule="evenodd"
                   />
                 </svg>
-                {error}
+                <span className="flex-1">{error}</span>
+                <button
+                  type="button"
+                  onClick={clearError}
+                  className="text-red-400 hover:text-red-600 transition-colors"
+                  aria-label="Dismiss error"
+                >
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </button>
               </div>
             )}
 
@@ -70,13 +94,16 @@ export default function LoginPage() {
                   type="email"
                   required
                   value={credentials.email}
-                  onChange={(e) =>
+                  onChange={(e) => {
+                    // Clear error when user starts typing
+                    if (error) clearError();
                     setCredentials((prev) => ({
                       ...prev,
                       email: e.target.value,
-                    }))
-                  }
-                  className="w-full px-4 py-3 border border-grey-300 placeholder-grey-400 text-grey-900 rounded-lg focus:outline-none focus:ring-primary-green-500 focus:border-primary-green-500 sm:text-sm"
+                    }));
+                  }}
+                  disabled={isFormLoading}
+                  className="w-full px-4 py-3 border border-grey-300 placeholder-grey-400 text-grey-900 rounded-lg focus:outline-none focus:ring-primary-green-500 focus:border-primary-green-500 sm:text-sm disabled:bg-grey-50 disabled:cursor-not-allowed transition-all duration-200"
                   placeholder="Enter your email"
                 />
               </div>
@@ -93,13 +120,16 @@ export default function LoginPage() {
                   type="password"
                   required
                   value={credentials.password}
-                  onChange={(e) =>
+                  onChange={(e) => {
+                    // Clear error when user starts typing
+                    if (error) clearError();
                     setCredentials((prev) => ({
                       ...prev,
                       password: e.target.value,
-                    }))
-                  }
-                  className="w-full px-4 py-3 border border-grey-300 placeholder-grey-400 text-grey-900 rounded-lg focus:outline-none focus:ring-primary-green-500 focus:border-primary-green-500 sm:text-sm"
+                    }));
+                  }}
+                  disabled={isFormLoading}
+                  className="w-full px-4 py-3 border border-grey-300 placeholder-grey-400 text-grey-900 rounded-lg focus:outline-none focus:ring-primary-green-500 focus:border-primary-green-500 sm:text-sm disabled:bg-grey-50 disabled:cursor-not-allowed transition-all duration-200"
                   placeholder="Enter your password"
                 />
               </div>
@@ -109,42 +139,32 @@ export default function LoginPage() {
               <label className="flex items-center gap-2">
                 <input
                   type="checkbox"
-                  className="rounded border-grey-300 text-primary-green-600 focus:ring-primary-green-500"
+                  disabled={isFormLoading}
+                  className="rounded border-grey-300 text-primary-green-600 focus:ring-primary-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
-                <span className="text-grey-600">Remember me</span>
+                <span className={`text-grey-600 ${isFormLoading ? 'opacity-50' : ''}`}>
+                  Remember me
+                </span>
               </label>
-              <a
+              <Link
                 href="/forgot-password"
-                className="text-primary-green-600 hover:text-primary-green-700 font-medium"
+                className={`text-primary-green-600 hover:text-primary-green-700 font-medium transition-colors ${
+                  isFormLoading ? 'opacity-50 pointer-events-none' : ''
+                }`}
               >
                 Forgot password?
-              </a>
+              </Link>
             </div>
 
             <button
               type="submit"
-              disabled={isLoading}
-              className="w-full rounded-lg px-6 py-3 bg-primary-green-500 text-white hover:bg-primary-green-600 focus:ring-primary-green-500 focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              disabled={isFormLoading}
+              className="w-full rounded-lg px-6 py-3 bg-primary-green-500 text-white hover:bg-primary-green-600 focus:ring-primary-green-500 focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2 min-h-[48px]"
             >
-              {isLoading ? (
+              {isFormLoading ? (
                 <>
-                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                      fill="none"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                  Signing in...
+                  <LoadingSpinner size="sm" className="text-white" />
+                  <span>Signing in...</span>
                 </>
               ) : (
                 "Sign in"
@@ -167,7 +187,9 @@ export default function LoginPage() {
             <div className="mt-6">
               <Link
                 href="/signup"
-                className="w-full text-center inline-block rounded-lg px-6 py-3 bg-slate-100 text-slate-900 hover:bg-slate-200 focus:ring-slate-500 focus:ring-2 focus:ring-offset-2 transition-colors"
+                className={`w-full text-center inline-block rounded-lg px-6 py-3 bg-slate-100 text-slate-900 hover:bg-slate-200 focus:ring-slate-500 focus:ring-2 focus:ring-offset-2 transition-colors ${
+                  isFormLoading ? 'opacity-50 pointer-events-none' : ''
+                }`}
               >
                 Create your account
               </Link>
@@ -177,19 +199,23 @@ export default function LoginPage() {
 
         <p className="text-center text-sm text-grey-500">
           By signing in, you agree to our{" "}
-          <a
-            href="#"
-            className="text-primary-green-600 hover:text-primary-green-700"
+          <Link
+            href="/terms"
+            className={`text-primary-green-600 hover:text-primary-green-700 transition-colors ${
+              isFormLoading ? 'opacity-50 pointer-events-none' : ''
+            }`}
           >
             Terms of Service
-          </a>{" "}
+          </Link>{" "}
           and{" "}
-          <a
-            href="#"
-            className="text-primary-green-600 hover:text-primary-green-700"
+          <Link
+            href="/privacy"
+            className={`text-primary-green-600 hover:text-primary-green-700 transition-colors ${
+              isFormLoading ? 'opacity-50 pointer-events-none' : ''
+            }`}
           >
             Privacy Policy
-          </a>
+          </Link>
         </p>
       </div>
     </div>

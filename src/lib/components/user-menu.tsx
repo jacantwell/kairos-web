@@ -1,12 +1,13 @@
 "use client";
 
 import { useSession } from "../context/session";
-
+import { LoadingDots } from "./ui/loading";
+import Link from "next/link";
 export const UserMenu: React.FC = () => {
-  const { user, isAuthenticated, logout, isLoading } = useSession();
+  const { user, isAuthenticated, isLoading } = useSession();
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <LoadingDots size="sm" className="absolute bottom-0" />
   }
 
   if (!isAuthenticated || !user) {
@@ -14,14 +15,12 @@ export const UserMenu: React.FC = () => {
   }
 
   return (
-    <div className="flex items-center gap-4">
-      <span>Welcome, {user.name}</span>
-      <button
-        onClick={logout}
-        className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-      >
-        Logout
-      </button>
-    </div>
+    <Link
+      key={"/journeys"}
+      href={"/journeys"}
+      className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+    >
+      Profile
+    </Link>
   );
 };
