@@ -84,7 +84,7 @@ jobs:
       - name: Get Global Stack Outputs
         id: global-output
         run: |
-          DISTRIBUTION_ID=$(aws cloudformation describe-stacks --stack-name $GLOBAL_STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='distributionId'].OutputValue" --output text)
+          DISTRIBUTION_ID=$(aws cloudformation describe-stacks --stack-name $GLOBAL_STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='DistributionId'].OutputValue" --output text)
           DISTRIBUTION_ARN=$(aws cloudformation describe-stacks --stack-name $GLOBAL_STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='distributionArn'].OutputValue" --output text)
           OAI_ID=$(aws cloudformation describe-stack-resource --stack-name $GLOBAL_STACK_NAME --logical-resource-id CloudFrontOriginAccessIdentity --query "StackResourceDetail.PhysicalResourceId" --output text)
 
