@@ -20,8 +20,8 @@ jobs:
       bucket_name: ${{ steps.regional-output.outputs.bucket_name }}
       root_bucket_name: ${{ steps.regional-output.outputs.root_bucket_name }}
       bucket_domain_name: ${{ steps.regional-output.outputs.bucket_domain_name }}
-      outribution_id: ${{ steps.global-output.outputs.outribution_id }}
-      outribution_arn: ${{ steps.global-output.outputs.outribution_arn }}
+      distribution_id: ${{ steps.global-output.outputs.distribution_id }}
+      distribution_arn: ${{ steps.global-output.outputs.distribution_arn }}
       oai_id: ${{ steps.global-output.outputs.oai_id }}
     
     steps:
@@ -41,7 +41,7 @@ jobs:
             --stack-name $REGIONAL_STACK_NAME \
             --parameter-overrides \
               DomainName=${{ vars.DOMAIN_NAME }} \
-              CloudFrontoutributionArn='' \
+              CloudFrontdistributionArn='' \
               CloudFrontOriginAccessIdentity='' \
             --capabilities CAPABILITY_IAM
       
@@ -84,16 +84,16 @@ jobs:
       - name: Get Global Stack Outputs
         id: global-output
         run: |
-          outRIBUTION_ID=$(aws cloudformation describe-stacks --stack-name $GLOBAL_STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='outributionId'].OutputValue" --output text)
-          outRIBUTION_ARN=$(aws cloudformation describe-stacks --stack-name $GLOBAL_STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='outributionArn'].OutputValue" --output text)
+          distribuTION_ID=$(aws cloudformation describe-stacks --stack-name $GLOBAL_STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='distributionId'].OutputValue" --output text)
+          distribuTION_ARN=$(aws cloudformation describe-stacks --stack-name $GLOBAL_STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='distributionArn'].OutputValue" --output text)
           # Get the OAI ID
           OAI_ID=$(aws cloudformation describe-stack-resource --stack-name $GLOBAL_STACK_NAME --logical-resource-id CloudFrontOriginAccessIdentity --query "StackResourceDetail.PhysicalResourceId" --output text)
-          echo "outribution_id=$outRIBUTION_ID" >> $GITHUB_OUTPUT
-          echo "outribution_arn=$outRIBUTION_ARN" >> $GITHUB_OUTPUT
+          echo "distribution_id=$distribuTION_ID" >> $GITHUB_OUTPUT
+          echo "distribution_arn=$distribuTION_ARN" >> $GITHUB_OUTPUT
           echo "oai_id=$OAI_ID" >> $GITHUB_OUTPUT
           # For debugging
-          echo "outribution ID: $outRIBUTION_ID"
-          echo "outribution ARN: $outRIBUTION_ARN"
+          echo "distribution ID: $distribuTION_ID"
+          echo "distribution ARN: $distribuTION_ARN"
           echo "OAI ID: $OAI_ID"
       
       - name: Update Regional Stack with CloudFront ARN (eu-west-2)
@@ -106,16 +106,16 @@ jobs:
       - name: Debugging Parameter Values
         run: |
           echo "DomainName: ${{ vars.DOMAIN_NAME }}"
-          echo "CloudFrontoutributionArn: ${{ steps.global-output.outputs.outribution_arn }}"
+          echo "CloudFrontdistributionArn: ${{ steps.global-output.outputs.distribution_arn }}"
           echo "CloudFrontOriginAccessIdentity: ${{ steps.global-output.outputs.oai_id }}"
       
       - name: Update S3 Bucket Policies (including content bucket)
         env:
-          outRIBUTION_ARN: ${{ steps.global-output.outputs.outribution_arn }}
+          distribuTION_ARN: ${{ steps.global-output.outputs.distribution_arn }}
           OAI_ID: ${{ steps.global-output.outputs.oai_id }}
         run: |
           # Using environment variables to ensure we have the values
-          echo "Using outribution ARN: $outRIBUTION_ARN"
+          echo "Using distribution ARN: $distribuTION_ARN"
           echo "Using OAI ID: $OAI_ID"
           
           aws cloudformation deploy \
@@ -123,7 +123,7 @@ jobs:
             --stack-name $REGIONAL_STACK_NAME \
             --parameter-overrides \
               DomainName=${{ vars.DOMAIN_NAME }} \
-              CloudFrontoutributionArn=$outRIBUTION_ARN \
+              CloudFrontdistributionArn=$distribuTION_ARN \
               CloudFrontOriginAccessIdentity=$OAI_ID \
             --capabilities CAPABILITY_IAM
 
@@ -178,5 +178,5 @@ jobs:
           
       - name: Invalidate CloudFront cache
         run: |
-          echo "Using outribution ID: ${{ needs.deploy-infrastructure.outputs.outribution_id }}"
-          aws cloudfront create-invalidation --outribution-id ${{ needs.deploy-infrastructure.outputs.outribution_id }} --paths "/*"
+          echo "Using distribution ID: ${{ needs.deploy-infrastructure.outputs.distribution_id }}"
+          aws cloudfront create-invalidation --distribution-id ${{ needs.deploy-infrastructure.outputs.distribution_id }} --paths "/*"
