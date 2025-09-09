@@ -1,0 +1,83 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Parameters:
+  DomainName:
+    Type: String
+  CloudFrontDistributionArn:
+    Type: String
+    Default: ''
+    Description: ARN of the CloudFront distribution (optional, provided on update)
+  CloudFrontOriginAccessIdentity:
+    Type: String
+    Default: ''
+    Description: CloudFront Origin Access Identity (optional, provided on update)
+
+Conditions:
+  HasCloudFrontDistribution: !Not [!Equals [!Ref CloudFrontDistributionArn, '']]
+  HasCloudFrontOAI: !Not [!Equals [!Ref CloudFrontOriginAccessIdentity, '']]
+
+Resources:
+
+  # S3 Bucket for Website Content
+  AppBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "www.${DomainName}"
+      AccessControl: Private
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: index.html
+  
+  SubAppBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref DomainName
+      AccessControl: Private
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: index.html
+
+  # S3 Bucket Policy for CloudFront (added only when CloudFront ARN is provided)
+  AppBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Condition: HasCloudFrontOAI
+    Properties:
+      Bucket: !Ref AppBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${CloudFrontOriginAccessIdentity}"
+            Action: 's3:GetObject'
+            Resource: !Sub "${AppBucket.Arn}/*"
+
+  SubAppBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Condition: HasCloudFrontOAI
+    Properties:
+      Bucket: !Ref SubAppBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${CloudFrontOriginAccessIdentity}"
+            Action: 's3:GetObject'
+            Resource: !Sub "${SubAppBucket.Arn}/*"
+
+Outputs:
+  BucketName:
+    Description: Name of S3 bucket to hold website content (www)
+    Value: !Ref AppBucket
+    Export:
+      Name: !Sub "${AWS::StackName}-BucketName"
+  RootBucketName:
+    Description: Name of S3 bucket for root domain
+    Value: !Ref SubAppBucket
+    Export:
+      Name: !Sub "${AWS::StackName}-RootBucketName"
+  BucketRegionalDomainName:
+    Description: Regional domain name of S3 bucket
+    Value: !GetAtt AppBucket.RegionalDomainName
+    Export:
+      Name: !Sub "${AWS::StackName}-BucketRegionalDomainName"
