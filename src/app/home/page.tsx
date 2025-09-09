@@ -1,4 +1,3 @@
-// kairos/src/app/home/page.tsx - Updated with Navigation
 "use client";
 
 import { AuthGuard } from "@/lib/components/auth";
@@ -26,23 +25,10 @@ export default function HomePage() {
     console.log("Point deleted:", id);
   };
 
-  const navigationActions = (
-    <button
-      onClick={() => setIsAddingPoint(!isAddingPoint)}
-      className={`px-4 py-2 rounded-lg transition-colors ${
-        isAddingPoint
-          ? 'bg-red-500 text-white hover:bg-red-600'
-          : 'bg-primary-green-500 text-white hover:bg-primary-green-600'
-      }`}
-    >
-      {isAddingPoint ? 'Cancel Adding' : 'Add Point'}
-    </button>
-  );
-
   return (
     <AuthGuard>
       <div className="min-h-screen bg-gray-50">
-        <Navigation title="Map" actions={navigationActions} />
+        <Navigation title="Map" />
 
         <main className="max-w-7xl mx-auto py-1 sm:px-6 lg:px-8">
           <div className="px-4 sm:px-0">
@@ -60,7 +46,7 @@ export default function HomePage() {
 
             {/* Active Journey Banner */}
             <div className="py-2">
-              <ActiveJourneyBanner journey={activeJourney} isLoading={isJourneysLoading} />
+              <ActiveJourneyBanner isAddingPoint={isAddingPoint} setIsAddingPoint={setIsAddingPoint} />
             </div>
 
             {/* Map Component */}
