@@ -44,15 +44,21 @@ export default function JourneysPage() {
       }
 
       // Set the selected journey as active
-      await api.journeys.toggleActiveJourneyApiV1JourneysJourneyIdActivePatch(
+      const response = await api.journeys.toggleActiveJourneyApiV1JourneysJourneyIdActivePatch(
         journeyId
       );
 
+      if (response.status !== 200) {
+        setError("Failed to set active journey");
+        refreshJourneys();
+        return;
+      }
+
       console.log("Set active journey:", journeyId);
       setIsActiveModalOpen(false);
-    } catch (err: any) {
+    } catch (err) {
       console.error("Failed to set active journey:", err);
-      setError(err.message || "Failed to set active journey");
+      setError("Failed to set active journey");
       refreshJourneys();
     }
   };
@@ -83,9 +89,9 @@ export default function JourneysPage() {
         addJourney(response.data);
         setIsCreateModalOpen(false);
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error("Failed to create journey:", err);
-      setError(err.message || "Failed to create journey");
+      setError("Failed to create journey");
     }
   };
 
@@ -99,11 +105,17 @@ export default function JourneysPage() {
       const response =
         await api.journeys.deleteJourneyApiV1JourneysJourneyIdDelete(journeyId);
 
-      // If the API call fails, we'll refresh to revert the optimistic update
+      if (response.status !== 200) {
+        setError("Failed to delete journey");
+        // Refresh journeys to revert the optimistic update
+        refreshJourneys();
+        return;
+      }
+
       console.log("Journey deleted successfully:", journeyId);
-    } catch (err: any) {
+    } catch (err) {
       console.error("Failed to delete journey:", err);
-      setError(err.message || "Failed to delete journey");
+      setError("Failed to delete journey");
       // Refresh journeys to revert the optimistic update and get current state from server
       refreshJourneys();
     }
@@ -129,10 +141,16 @@ export default function JourneysPage() {
           journeyId
         );
 
+        if (response.status !== 200) {
+          setError("Failed to update journey");
+          refreshJourneys();
+          return;
+        }
+
       console.log("Toggle active:", journeyId, active);
-    } catch (err: any) {
+    } catch (err) {
       console.error("Failed to toggle journey active status:", err);
-      setError(err.message || "Failed to update journey");
+      setError("Failed to update journey");
       // Refresh journeys to revert optimistic update
       refreshJourneys();
     }
@@ -142,9 +160,9 @@ export default function JourneysPage() {
     try {
       setError(null);
       await refreshJourneys();
-    } catch (err: any) {
+    } catch (err) {
       console.error("Failed to refresh journeys:", err);
-      setError(err.message || "Failed to refresh journeys");
+      setError("Failed to refresh journeys");
     }
   };
 

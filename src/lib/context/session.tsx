@@ -137,10 +137,10 @@ export const SessionProvider: React.FC<SessionProviderProps> = ({
       });
 
       return true;
-    } catch (error: any) {
+    } catch (error) {
       console.error("Login failed:", error);
       const errorMessage =
-        error.response?.data?.detail || error.message || "Login failed";
+        "Login failed";
       setState((prev) => ({
         ...prev,
         isLoading: false,
@@ -175,11 +175,11 @@ export const SessionProvider: React.FC<SessionProviderProps> = ({
         token: getAccessToken(), // Update token in case it was refreshed
         error: null,
       }));
-    } catch (error: any) {
+    } catch (error) {
       console.error("Failed to refresh user:", error);
       setState((prev) => ({
         ...prev,
-        error: error.message || "Failed to refresh user data",
+        error: "Failed to refresh user data",
       }));
     }
   };

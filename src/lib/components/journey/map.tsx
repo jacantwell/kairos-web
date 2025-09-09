@@ -1,8 +1,6 @@
 // kairos/src/lib/components/journey/journey-map.tsx
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Map, {
-  Source,
-  Layer,
   NavigationControl,
   Marker,
   ViewState,
@@ -11,6 +9,7 @@ import Map, {
 import "mapbox-gl/dist/mapbox-gl.css";
 import { JourneyPoint } from "@/app/home/page";
 import { AddPointModal } from "./add-point-modal";
+import { MapLayerMouseEvent, MapLayerTouchEvent } from "react-map-gl/maplibre";
 
 interface JourneyMapProps {
   journeyPoints: JourneyPoint[];
@@ -101,7 +100,7 @@ export function JourneyMap({
   }, [journeyPoints]);
 
   // Handle map click for adding points
-  const handleMapClick = useCallback((event: any) => {
+  const handleMapClick = useCallback((event: MapLayerMouseEvent | MapLayerTouchEvent) => {
     if (!isAddingPoint) return;
 
     const { lng, lat } = event.lngLat;
@@ -109,7 +108,7 @@ export function JourneyMap({
   }, [isAddingPoint]);
 
   // Handle mouse move over map
-  const handleMouseMove = useCallback((event: any) => {
+  const handleMouseMove = useCallback(() => {
     setCursor(isAddingPoint ? 'crosshair' : 'auto');
   }, [isAddingPoint]);
 

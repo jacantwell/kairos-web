@@ -25,7 +25,7 @@ let isRefreshing = false;
 // A queue for requests that failed with 401, to be retried after token refresh
 let failedQueue: {
   resolve: (value: unknown) => void;
-  reject: (reason?: any) => void;
+  reject: (reason?: Error) => void;
 }[] = [];
 
 const processQueue = (error: Error | null, token: string | null = null) => {
@@ -115,8 +115,12 @@ axiosInstance.interceptors.response.use(
 
       processQueue(null, newAccessToken);
       return axiosInstance(originalRequest);
-    } catch (refreshError: any) {
-      processQueue(refreshError, null);
+    } catch (refreshError: unknown) {
+      const errorToQueue =
+        refreshError instanceof Error
+          ? refreshError
+          : new Error(String(refreshError));
+      processQueue(errorToQueue, null);
       console.error("Failed to refresh token", refreshError);
       clearAuthTokens();
       if (typeof window !== "undefined") window.location.href = "/login";

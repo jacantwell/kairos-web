@@ -14,12 +14,12 @@ export function ActiveJourneyModal({ onCancel, onConfirm }: ActiveJourneyModalPr
   const [selected, setSelected] = useState<Journey | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const filteredJourneys = journeys.filter(journey => {
-    // if (filter === 'active') return journey.active;
-    // if (filter === 'inactive') return !journey.active;
-    // return !journey.completed    // TODO
-    return true;
-  });
+  // const filteredJourneys = journeys.filter(journey => {
+  //   // if (filter === 'active') return journey.active;
+  //   // if (filter === 'inactive') return !journey.active;
+  //   // return !journey.completed    // TODO
+  //   return true;
+  // });
 
   const handleConfirm = async () => {
     if (!selected?._id) return;

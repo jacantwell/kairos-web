@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useSession } from "@/lib/context/session";
 import { useRouter } from "next/navigation";
-import { Logo, LogoWithText } from "@/lib/components/ui/logo";
+import { Logo } from "@/lib/components/ui/logo";
 
 export default function LoginPage() {
   const { login, isLoading, error, clearError } = useSession();
@@ -29,7 +29,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-grey-50 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full p-8 bg-white rounded-xl shadow-lg space-y-8">
         <div className="text-center space-y-4">
-          <Logo variant="primary" size="lg" />
+          <Logo size="lg" />
           <h2 className="text-2xl font-bold font-logo text-shark-500">
             Welcome back to Kairos
           </h2>

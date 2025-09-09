@@ -8,7 +8,6 @@ export default function ForgotPasswordPage() {
   const api = useApi();
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [email, setEmail] = useState<string>("");
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -16,9 +15,7 @@ export default function ForgotPasswordPage() {
     try {
       await api.users.resetPasswordApiV1UsersResetPasswordPost(email);
     } catch (error) {
-      setError(
-        "An error occurred while sending the reset email. Please try again."
-      );
+      console.log(error);
       setIsLoading(false);
       return;
     } finally {
@@ -31,17 +28,17 @@ export default function ForgotPasswordPage() {
     <div className="min-h-screen flex items-center justify-center bg-grey-50">
       <div className="max-w-md w-full p-8 bg-white rounded-xl shadow-lg space-y-8">
         <div className="flex justify-center">
-          <Logo variant="primary" size="lg" />
+          <Logo size="lg" />
         </div>
         {isSubmitted ? (
           <div className="text-center">
             <h2 className="text-2xl font-bold font-logo text-shark-500 mb-4">
               Check your email
             </h2>
-            <p className="text-grey-500 text-sm">
-              If an account with that email exists, we've sent a password reset
-              link to it.
-            </p>
+<p className="text-grey-500 text-sm">
+  If an account with that email exists, we&#39;ve sent a password reset
+  link to it.
+</p>
           </div>
         ) : (
           <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
@@ -50,7 +47,7 @@ export default function ForgotPasswordPage() {
                 Forgot your password?
               </h2>
               <p className="text-grey-500 text-sm">
-                Enter your email address below and we'll send you a link to
+                Enter your email address below and we&#39;ll send you a link to
                 reset your password.
               </p>
             </div>

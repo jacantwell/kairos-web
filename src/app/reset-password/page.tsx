@@ -14,18 +14,19 @@ export default function ForgotPasswordPage() {
     password: "",
     confirmed_password: "",
   });
-  const [passwordError, setPasswordError] = useState<string | null>(null);
+  // const [passwordError, setPasswordError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isReset, setIsReset] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (formDetails.password !== formDetails.confirmed_password) {
-      setPasswordError("Passwords do not match");
-      return;
-    }
+    // TODO Implement this 
+    // if (formDetails.password !== formDetails.confirmed_password) {
+    //   setPasswordError("Passwords do not match");
+    //   return;
+    // }
 
     try {
       const response =
@@ -39,9 +40,7 @@ export default function ForgotPasswordPage() {
         return;
       }
     } catch (error) {
-      setError(
-        "An error occurred while sending the reset email. Please try again."
-      );
+      console.log(error);
       setIsLoading(false);
       return;
     } finally {
@@ -54,7 +53,7 @@ export default function ForgotPasswordPage() {
     <div className="min-h-screen flex items-center justify-center bg-grey-50">
       <div className="max-w-md w-full p-8 bg-white rounded-xl shadow-lg space-y-8">
         <div className="flex justify-center">
-          <Logo variant="primary" size="lg" />
+          <Logo size="lg" />
         </div>
         {isReset ? (
           <div className="text-center">

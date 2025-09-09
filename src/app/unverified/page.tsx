@@ -1,20 +1,13 @@
 "use client";
 
-import Link from "next/link";
-import { useState } from "react";
-import { useSession } from "@/lib/context/session";
-import { redirect } from "next/navigation";
-import { Logo, LogoWithText } from "@/lib/components/ui/logo";
-import { useSearchParams } from "next/navigation";
-import { useApi } from "@/lib/api/hooks/use-api";
-import { useEffect } from "react";
+import { Logo } from "@/lib/components/ui/logo";
 
 export default function VerifyPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-grey-50 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full p-8 bg-white rounded-xl shadow-lg space-y-8">
         <div className="text-center space-y-4">
-          <Logo variant="primary" size="lg" />
+          <Logo size="lg" />
         </div>
         <div className="animate-fade-in items-center text-center space-y-6">
           Please check your email to verify your account.

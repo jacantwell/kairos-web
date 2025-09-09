@@ -1,35 +1,14 @@
 import React from "react";
 
 interface LogoProps {
-  variant?: "primary" | "secondary" | "outline" | "ghost";
   size?: "sm" | "md" | "lg";
   className?: string;
 }
 
 export const Logo: React.FC<LogoProps> = ({
-  variant = "primary",
   size = "md",
   className = "",
 }) => {
-  const baseClasses =
-    "inline-flex items-center justify-center gap-2 font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed";
-
-  const variantClasses = {
-    primary:
-      "bg-primary-green-500 text-white hover:bg-primary-green-600 focus:ring-primary-green-500 shadow-sm hover:shadow-md",
-    secondary:
-      "bg-slate-100 text-slate-900 hover:bg-slate-200 focus:ring-slate-500",
-    outline:
-      "border-2 border-primary-green-500 text-primary-green-600 hover:bg-primary-green-50 focus:ring-primary-green-500",
-    ghost:
-      "text-slate-600 hover:bg-slate-100 hover:text-slate-900 focus:ring-slate-500",
-  };
-
-  const sizeClasses = {
-    sm: "px-3 py-2 text-sm rounded-md",
-    md: "px-4 py-2.5 text-base rounded-lg",
-    lg: "px-6 py-3 text-lg rounded-xl",
-  };
 
   const sizesSVG = {
     sm: "20px",
@@ -37,10 +16,8 @@ export const Logo: React.FC<LogoProps> = ({
     lg: "40px",
   };
 
-  const classes = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`;
-
   return (
-    <div className="inline-flex items-center justify-center gap-4">
+    <div className={`inline-flex items-center justify-center gap-4 ${className}`}>
       <svg
         fill="#000000"
         height={sizesSVG[size]}
@@ -71,13 +48,13 @@ export const Logo: React.FC<LogoProps> = ({
 };
 
 export const LogoWithText: React.FC<LogoProps> = ({
-  variant = "primary",
   size = "md",
   className = "",
 }) => {
   return (
     <div className="flex flex-col items-center justify-center">
-      <Logo variant={variant} size={size} />
+      {/* Not sure classname should be passed through here */}
+      <Logo size={size} className={className} />
       <p
         className={`text-center font-logo font-bold text-m text-slate-500 ${className}`}
       >

@@ -281,7 +281,7 @@ export function JourneyCard({
             </div>
 
             <p className="text-sm text-gray-600 mb-6">
-              Are you sure you want to delete "<strong>{journey.name}</strong>"?
+              Are you sure you want to delete &#39;<strong>{journey.name}</strong>&#39;?
               All associated markers and data will be permanently removed.
             </p>
 
