@@ -34,7 +34,7 @@ Resources:
         RoutingRules:
           - RedirectRule:
               ReplaceKeyPrefixWith: "index.html"
-            Condition:
+            RoutingRuleCondition:
               HttpErrorCodeReturnedEquals: "404"
   
   # S3 Bucket for Root Domain
@@ -54,7 +54,7 @@ Resources:
         RoutingRules:
           - RedirectRule:
               ReplaceKeyPrefixWith: "index.html"
-            Condition:
+            RoutingRuleCondition: # <-- Correct
               HttpErrorCodeReturnedEquals: "404"
 
   # S3 Bucket Policy for CloudFront OAC (www bucket)
@@ -71,7 +71,7 @@ Resources:
               Service: cloudfront.amazonaws.com
             Action: 's3:GetObject'
             Resource: !Sub "${AppBucket.Arn}/*"
-            Condition:
+            RoutingRuleCondition:
               StringEquals:
                 'AWS:SourceArn': !Ref CloudFrontDistributionArn
 
@@ -89,7 +89,7 @@ Resources:
               Service: cloudfront.amazonaws.com
             Action: 's3:GetObject'
             Resource: !Sub "${SubAppBucket.Arn}/*"
-            Condition:
+            RoutingRuleCondition:
               StringEquals:
                 'AWS:SourceArn': !Ref CloudFrontDistributionArn
 
