@@ -22,7 +22,7 @@ export function AddPointModal({
     name: "",
     notes: "",
     estimateTime: "",
-    arrival: Date.now().toString().slice(0, 10), // YYYY-MM-DD
+    timestamp: ""
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -44,7 +44,7 @@ export function AddPointModal({
         coordinates: {type: "Point", coordinates} as Coordinates,
         marker_type: formData.type as MarkerMarkerTypeEnum,
         estimated_time: formData.type === 'plan' ? formData.estimateTime.trim() : undefined,
-        timestamp: formData.type === 'past' ? new Date(formData.arrival).toDateString() : undefined,
+        timestamp: formData.type === 'past' ? formData.timestamp.trim() : undefined,
       };
 
       onConfirm(newPoint);
@@ -72,7 +72,7 @@ export function AddPointModal({
     { value: 'past', label: 'Past' },
   ];
 
-  const [latitude, longitude] = coordinates; // Note: GeoJSON format is [lng, lat]
+  const [longitude, latitude] = coordinates; // Note: GeoJSON format is [lng, lat]
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -140,21 +140,20 @@ export function AddPointModal({
                 value={formData.estimateTime}
                 onChange={handleInputChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-green-500 focus:border-primary-green-500 dark:bg-slate-700 dark:border-slate-600 dark:text-white"
-                placeholder="e.g., 2 hours, 30 mins"
                 disabled={isSubmitting}
               />
             </div>
           )}
           {(formData.type === 'past') && (
             <div>
-              <label htmlFor="arrival" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label htmlFor="timestamp" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Date
               </label>
               <input
-                type="date"
-                id="arrival"
-                name="arrival"
-                value={formData.arrival}
+                type="Date"
+                id="timestamp"
+                name="timestamp"
+                value={formData.timestamp}
                 onChange={handleInputChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-green-500 focus:border-primary-green-500 dark:bg-slate-700 dark:border-slate-600 dark:text-white"
                 disabled={isSubmitting}

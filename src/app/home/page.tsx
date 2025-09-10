@@ -7,19 +7,19 @@ import { ActiveJourneyBanner } from "@/lib/components/journey/active-journey-ban
 import { useJourneys } from "@/lib/api/hooks/use-journeys";
 import { useState } from "react";
 import { Marker } from "kairos-api-client-ts";
-import { useApi } from "@/lib/api/hooks/use-api";
 
 export default function HomePage() {
   const [isAddingPoint, setIsAddingPoint] = useState(false);
+  
   const {
     activeJourney,
     activeJourneyMarkers,
     refreshActiveJourneyMarkers,
+    addMarkerToActiveJourney,
+    deleteMarkerFromActiveJourney,
     isLoading,
     error,
   } = useJourneys();
-  
-  const api = useApi();
 
   const handleAddPoint = async (point: Marker) => {
     if (!activeJourney?._id) {
@@ -31,21 +31,11 @@ export default function HomePage() {
 
     try {
       console.log("Adding point to journey:", activeJourney._id, point);
-      
-      const response = await api.journeys.addMarkerToJourneyApiV1JourneysJourneyIdMarkersPost(
-        activeJourney._id,
-        point
-      );
-
-      if (response.status === 200) {
-        // Refresh markers to get the updated list with proper IDs
-        await refreshActiveJourneyMarkers();
-        console.log("Point added successfully:", response.data);
-      } else {
-        console.error("Failed to add point. Status:", response.status);
-      }
+      await addMarkerToActiveJourney(point);
+      console.log("Point added successfully");
     } catch (error) {
       console.error("Error adding point:", error);
+      // You might want to show a toast notification here
     } finally {
       setIsAddingPoint(false);
     }
@@ -59,18 +49,11 @@ export default function HomePage() {
 
     try {
       console.log("Deleting point:", id);
-      
-      // TODO: Implement the actual delete API call when available
-      // const response = await api.journeys.deleteMarkerApiV1JourneysJourneyIdMarkersMarkerIdDelete(
-      //   activeJourney._id,
-      //   id
-      // );
-
-      // For now, just refresh the markers list
-      await refreshActiveJourneyMarkers();
+      await deleteMarkerFromActiveJourney(id);
       console.log("Point deleted:", id);
     } catch (error) {
       console.error("Error deleting point:", error);
+      // You might want to show a toast notification here
     }
   };
 
@@ -133,7 +116,7 @@ export default function HomePage() {
               />
             </div>
 
-            {/* Map Component - Only show when we have data or when loading */}
+            {/* Map Component */}
             {(activeJourney || isLoading) && (
               <JourneyMap
                 journeyMarkers={activeJourneyMarkers}
@@ -151,7 +134,6 @@ export default function HomePage() {
                 </h3>
                 <div className="space-y-2">
                   {activeJourneyMarkers.map((point, index) => {
-                    // Create a reliable key for list items
                     const listKey = point._id || `point-${index}-${point.name}-${Date.now()}`;
                     const isTemporary = !point._id || point._id.startsWith("temp-");
 
@@ -177,8 +159,8 @@ export default function HomePage() {
                             <p className="text-sm text-gray-500 mt-1">{point.notes}</p>
                           )}
                           <p className="text-xs text-gray-400 mt-1">
-                            {point.coordinates.coordinates[0].toFixed(6)},{" "}
-                            {point.coordinates.coordinates[1].toFixed(6)}
+                            {point.coordinates.coordinates[1].toFixed(6)},{" "}
+                            {point.coordinates.coordinates[0].toFixed(6)}
                           </p>
                           <p className="text-xs text-gray-400 capitalize">
                             Type: {point.marker_type}

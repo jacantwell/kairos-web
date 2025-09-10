@@ -66,16 +66,16 @@ export function JourneyMap({
       // Single point - center on it
       setCurrentViewState((prev) => ({
         ...prev,
-        longitude: journeyMarkers[0].coordinates.coordinates[1],
-        latitude: journeyMarkers[0].coordinates.coordinates[0],
+        longitude: journeyMarkers[0].coordinates.coordinates[0],
+        latitude: journeyMarkers[0].coordinates.coordinates[1],
         zoom: 10,
       }));
       return;
     }
 
     // Multiple points - fit bounds
-    const lngs = journeyMarkers.map((p) => p.coordinates.coordinates[1]);
-    const lats = journeyMarkers.map((p) => p.coordinates.coordinates[0]);
+    const lngs = journeyMarkers.map((p) => p.coordinates.coordinates[0]);
+    const lats = journeyMarkers.map((p) => p.coordinates.coordinates[1]);
 
     const minLng = Math.min(...lngs);
     const maxLng = Math.max(...lngs);
@@ -212,13 +212,13 @@ export function JourneyMap({
             // Key that handles cases where _id might be undefined
             const markerKey =
               point._id ||
-              `marker-${index}-${point.name}-${point.coordinates.coordinates[0]}-${point.coordinates.coordinates[1]}`;
+              `marker-${index}-${point.name}-${point.coordinates.coordinates[1]}-${point.coordinates.coordinates[0]}`;
 
             return (
               <Marker
                 key={markerKey}
-                longitude={point.coordinates.coordinates[1]}
-                latitude={point.coordinates.coordinates[0]}
+                longitude={point.coordinates.coordinates[0]}
+                latitude={point.coordinates.coordinates[1]}
                 anchor="bottom"
               >
                 <div
@@ -292,8 +292,8 @@ export function JourneyMap({
               <div>
                 <span className="text-sm text-gray-500">Location:</span>
                 <p className="text-sm font-mono">
-                  {selectedPoint.coordinates.coordinates[0].toFixed(6)},{" "}
-                  {selectedPoint.coordinates.coordinates[1].toFixed(6)}
+                  {selectedPoint.coordinates.coordinates[1].toFixed(6)},{" "}
+                  {selectedPoint.coordinates.coordinates[0].toFixed(6)}
                 </p>
               </div>
 
