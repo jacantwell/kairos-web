@@ -3,9 +3,6 @@ name: Build, Push, and Deploy
 on:
   push:
     branches: [ main ]
-    paths:
-      - 'kairos/**'
-      - '.github/**'
 
 jobs:
   deploy-infrastructure:
