@@ -7,19 +7,19 @@ import Map, {
   ViewStateChangeEvent,
 } from "react-map-gl/mapbox";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { JourneyPoint } from "@/app/home/page";
 import { AddPointModal } from "./add-point-modal";
 import { MapLayerMouseEvent, MapLayerTouchEvent } from "react-map-gl/maplibre";
+import { Marker as MarkerType } from "kairos-api-client-ts";
 
 interface JourneyMapProps {
-  journeyPoints: JourneyPoint[];
+  journeyMarkers: MarkerType[];
   isAddingPoint: boolean;
-  onAddPoint: (point: JourneyPoint) => void;
+  onAddPoint: (point: MarkerType) => void;
   onDeletePoint: (id: string) => void;
 }
 
 export function JourneyMap({
-  journeyPoints,
+  journeyMarkers,
   isAddingPoint,
   onAddPoint,
   onDeletePoint,
@@ -34,9 +34,12 @@ export function JourneyMap({
   });
 
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [cursor, setCursor] = useState<string>('auto');
-  const [pendingPoint, setPendingPoint] = useState<{lat: number, lng: number} | null>(null);
-  const [selectedPoint, setSelectedPoint] = useState<JourneyPoint | null>(null);
+  const [cursor, setCursor] = useState<string>("auto");
+  const [pendingPoint, setPendingPoint] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
+  const [selectedPoint, setSelectedPoint] = useState<MarkerType | null>(null);
 
   // Effect to handle dark mode
   useEffect(() => {
@@ -57,23 +60,23 @@ export function JourneyMap({
 
   // Auto fit bounds when journey points change
   const fitBounds = useCallback(() => {
-    if (!journeyPoints || journeyPoints.length === 0) return;
+    if (!journeyMarkers || journeyMarkers.length === 0) return;
 
-    if (journeyPoints.length === 1) {
+    if (journeyMarkers.length === 1) {
       // Single point - center on it
-      setCurrentViewState(prev => ({
+      setCurrentViewState((prev) => ({
         ...prev,
-        longitude: journeyPoints[0].longitude,
-        latitude: journeyPoints[0].latitude,
+        longitude: journeyMarkers[0].coordinates.coordinates[0],
+        latitude: journeyMarkers[0].coordinates.coordinates[1],
         zoom: 10,
       }));
       return;
     }
 
     // Multiple points - fit bounds
-    const lngs = journeyPoints.map(p => p.longitude);
-    const lats = journeyPoints.map(p => p.latitude);
-    
+    const lngs = journeyMarkers.map((p) => p.coordinates.coordinates[0]);
+    const lats = journeyMarkers.map((p) => p.coordinates.coordinates[1]);
+
     const minLng = Math.min(...lngs);
     const maxLng = Math.max(...lngs);
     const minLat = Math.min(...lats);
@@ -88,28 +91,34 @@ export function JourneyMap({
 
     let zoom = 1;
     if (maxDiff > 0) {
-      zoom = Math.min(15, Math.max(1, Math.floor(8 - Math.log(maxDiff) / Math.log(2))));
+      zoom = Math.min(
+        15,
+        Math.max(1, Math.floor(8 - Math.log(maxDiff) / Math.log(2)))
+      );
     }
 
-    setCurrentViewState(prev => ({
+    setCurrentViewState((prev) => ({
       ...prev,
       longitude: centerLng,
       latitude: centerLat,
       zoom: zoom,
     }));
-  }, [journeyPoints]);
+  }, [journeyMarkers]);
 
   // Handle map click for adding points
-  const handleMapClick = useCallback((event: MapLayerMouseEvent | MapLayerTouchEvent) => {
-    if (!isAddingPoint) return;
+  const handleMapClick = useCallback(
+    (event: MapLayerMouseEvent | MapLayerTouchEvent) => {
+      if (!isAddingPoint) return;
 
-    const { lng, lat } = event.lngLat;
-    setPendingPoint({ lat, lng });
-  }, [isAddingPoint]);
+      const { lng, lat } = event.lngLat;
+      setPendingPoint({ lat, lng });
+    },
+    [isAddingPoint]
+  );
 
   // Handle mouse move over map
   const handleMouseMove = useCallback(() => {
-    setCursor(isAddingPoint ? 'crosshair' : 'auto');
+    setCursor(isAddingPoint ? "crosshair" : "auto");
   }, [isAddingPoint]);
 
   // Button handler for fitting bounds
@@ -123,16 +132,12 @@ export function JourneyMap({
     : "mapbox://styles/mapbox/outdoors-v12";
 
   // Get marker color based on point type
-  const getMarkerColor = (type: JourneyPoint['type']) => {
+  const getMarkerColor = (type: MarkerType["marker_type"]) => {
     const colors = {
-      waypoint: '#3B82F6', // blue
-      camp: '#059669', // green
-      food: '#DC2626', // red
-      water: '#0891B2', // cyan
-      repair: '#7C2D12', // amber
-      scenic: '#7C3AED', // purple
+      plan: "#3B82F6", // blue
+      past: "#059669", // green
     };
-    return colors[type] || colors.waypoint;
+    return colors[type] || colors.plan;
   };
 
   return (
@@ -158,7 +163,7 @@ export function JourneyMap({
               onClick={handleFitBounds}
               className="rounded bg-white p-2 shadow dark:bg-slate-700"
               title="Fit map to journey"
-              disabled={journeyPoints.length === 0}
+              disabled={journeyMarkers.length === 0}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -183,8 +188,18 @@ export function JourneyMap({
             <div className="absolute top-2 left-1/2 transform -translate-x-1/2">
               <div className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg">
                 <div className="flex items-center gap-2">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                    />
                   </svg>
                   Click on the map to add a point
                 </div>
@@ -193,33 +208,41 @@ export function JourneyMap({
           )}
 
           {/* Journey point markers */}
-          {journeyPoints.map((point) => (
-            <Marker
-              key={point.id}
-              longitude={point.longitude}
-              latitude={point.latitude}
-              anchor="bottom"
-            >
-              <div
-                className="cursor-pointer transition-transform hover:scale-110"
-                onClick={() => setSelectedPoint(point)}
-                title={point.name}
+          {journeyMarkers.map((point, index) => {
+            // Key that handles cases where _id might be undefined
+            const markerKey =
+              point._id ||
+              `marker-${index}-${point.name}-${point.coordinates.coordinates[1]}-${point.coordinates.coordinates[0]}`;
+
+            return (
+              <Marker
+                key={markerKey}
+                longitude={point.coordinates.coordinates[0]}
+                latitude={point.coordinates.coordinates[1]}
+                anchor="bottom"
               >
-                <div 
-                  className="w-6 h-6 rounded-full border-2 border-white shadow-md"
-                  style={{ backgroundColor: getMarkerColor(point.type) }}
-                />
-              </div>
-            </Marker>
-          ))}
+                <div
+                  className="cursor-pointer transition-transform hover:scale-110"
+                  onClick={() => setSelectedPoint(point)}
+                  title={point.name}
+                >
+                  <div
+                    className="w-6 h-6 rounded-full border-2 border-white shadow-md"
+                    style={{
+                      backgroundColor: getMarkerColor(point.marker_type),
+                    }}
+                  />
+                </div>
+              </Marker>
+            );
+          })}
         </Map>
       </div>
 
       {/* Add Point Modal */}
       {pendingPoint && (
         <AddPointModal
-          latitude={pendingPoint.lat}
-          longitude={pendingPoint.lng}
+          coordinates={[pendingPoint.lng, pendingPoint.lat]} // Note: GeoJSON format is [lng, lat]
           onConfirm={onAddPoint}
           onCancel={() => setPendingPoint(null)}
         />
@@ -235,36 +258,49 @@ export function JourneyMap({
                 onClick={() => setSelectedPoint(null)}
                 className="text-gray-400 hover:text-gray-600"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>
-            
+
             <div className="space-y-3">
               <div>
                 <span className="text-sm text-gray-500">Type:</span>
-                <p className="font-medium capitalize">{selectedPoint.type}</p>
+                <p className="font-medium capitalize">
+                  {selectedPoint.marker_type}
+                </p>
               </div>
-              
-              {selectedPoint.description && (
+
+              {selectedPoint.notes && (
                 <div>
                   <span className="text-sm text-gray-500">Description:</span>
-                  <p>{selectedPoint.description}</p>
+                  <p>{selectedPoint.notes}</p>
                 </div>
               )}
-              
+
               <div>
                 <span className="text-sm text-gray-500">Location:</span>
                 <p className="text-sm font-mono">
-                  {selectedPoint.latitude.toFixed(6)}, {selectedPoint.longitude.toFixed(6)}
+                  {selectedPoint.coordinates.coordinates[1].toFixed(6)},{" "}
+                  {selectedPoint.coordinates.coordinates[0].toFixed(6)}
                 </p>
               </div>
-              
-              <div>
+
+              {/* <div>
                 <span className="text-sm text-gray-500">Added:</span>
-                <p className="text-sm">{selectedPoint.dateAdded.toLocaleDateString()}</p>
-              </div>
+                <p className="text-sm">{selectedPoint.created_at?.toLocaleDateString()}</p>
+              </div> */}
             </div>
 
             <div className="mt-6 flex gap-3">
@@ -276,7 +312,7 @@ export function JourneyMap({
               </button>
               <button
                 onClick={() => {
-                  onDeletePoint(selectedPoint.id);
+                  onDeletePoint(selectedPoint._id || "");
                   setSelectedPoint(null);
                 }}
                 className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
