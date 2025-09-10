@@ -6,40 +6,61 @@ Parameters:
     Type: String
     Default: ''
     Description: ARN of the CloudFront distribution (optional, provided on update)
-  CloudFrontOriginAccessIdentity:
+  CloudFrontOriginAccessControl:
     Type: String
     Default: ''
-    Description: CloudFront Origin Access Identity (optional, provided on update)
+    Description: CloudFront Origin Access Control ID (optional, provided on update)
 
 Conditions:
   HasCloudFrontDistribution: !Not [!Equals [!Ref CloudFrontDistributionArn, '']]
-  HasCloudFrontOAI: !Not [!Equals [!Ref CloudFrontOriginAccessIdentity, '']]
+  HasCloudFrontOAC: !Not [!Equals [!Ref CloudFrontOriginAccessControl, '']]
 
 Resources:
 
-  # S3 Bucket for Website Content
+  # S3 Bucket for Website Content (www subdomain)
   AppBucket:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Sub "www.${DomainName}"
       AccessControl: Private
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
       WebsiteConfiguration:
         IndexDocument: index.html
         ErrorDocument: index.html
+        RoutingRules:
+          - RedirectRule:
+              ReplaceKeyPrefixWith: "index.html"
+            Condition:
+              HttpErrorCodeReturnedEquals: "404"
   
+  # S3 Bucket for Root Domain
   SubAppBucket:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Ref DomainName
       AccessControl: Private
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
       WebsiteConfiguration:
         IndexDocument: index.html
         ErrorDocument: index.html
+        RoutingRules:
+          - RedirectRule:
+              ReplaceKeyPrefixWith: "index.html"
+            Condition:
+              HttpErrorCodeReturnedEquals: "404"
 
-  # S3 Bucket Policy for CloudFront (added only when CloudFront ARN is provided)
+  # S3 Bucket Policy for CloudFront OAC (www bucket)
   AppBucketPolicy:
     Type: AWS::S3::BucketPolicy
-    Condition: HasCloudFrontOAI
+    Condition: HasCloudFrontOAC
     Properties:
       Bucket: !Ref AppBucket
       PolicyDocument:
@@ -47,13 +68,17 @@ Resources:
         Statement:
           - Effect: Allow
             Principal:
-              AWS: !Sub "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${CloudFrontOriginAccessIdentity}"
+              Service: cloudfront.amazonaws.com
             Action: 's3:GetObject'
             Resource: !Sub "${AppBucket.Arn}/*"
+            Condition:
+              StringEquals:
+                'AWS:SourceArn': !Ref CloudFrontDistributionArn
 
+  # S3 Bucket Policy for CloudFront OAC (root domain bucket)
   SubAppBucketPolicy:
     Type: AWS::S3::BucketPolicy
-    Condition: HasCloudFrontOAI
+    Condition: HasCloudFrontOAC
     Properties:
       Bucket: !Ref SubAppBucket
       PolicyDocument:
@@ -61,9 +86,12 @@ Resources:
         Statement:
           - Effect: Allow
             Principal:
-              AWS: !Sub "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${CloudFrontOriginAccessIdentity}"
+              Service: cloudfront.amazonaws.com
             Action: 's3:GetObject'
             Resource: !Sub "${SubAppBucket.Arn}/*"
+            Condition:
+              StringEquals:
+                'AWS:SourceArn': !Ref CloudFrontDistributionArn
 
 Outputs:
   BucketName:

@@ -19,7 +19,7 @@ jobs:
       bucket_domain_name: ${{ steps.regional-output.outputs.bucket_domain_name }}
       distribution_id: ${{ steps.global-output.outputs.distribution_id }}
       distribution_arn: ${{ steps.global-output.outputs.distribution_arn }}
-      oai_id: ${{ steps.global-output.outputs.oai_id }}
+      oac_id: ${{ steps.global-output.outputs.oac_id }}
     
     steps:
       - uses: actions/checkout@v3
@@ -39,7 +39,7 @@ jobs:
             --parameter-overrides \
               DomainName=${{ vars.DOMAIN_NAME }} \
               CloudFrontDistributionArn='' \
-              CloudFrontOriginAccessIdentity='' \
+              CloudFrontOriginAccessControl='' \
             --capabilities CAPABILITY_IAM
       
       - name: Get Regional Stack Outputs
@@ -52,7 +52,6 @@ jobs:
           echo "bucket_name=$BUCKET_NAME" >> $GITHUB_OUTPUT
           echo "root_bucket_name=$ROOT_BUCKET_NAME" >> $GITHUB_OUTPUT
           echo "bucket_domain_name=$BUCKET_DOMAIN_NAME" >> $GITHUB_OUTPUT
-          echo "content_bucket_domain_name=$CONTENT_BUCKET_DOMAIN_NAME" >> $GITHUB_OUTPUT
           
           # For debugging
           echo "Bucket name (www): $BUCKET_NAME"
@@ -75,23 +74,22 @@ jobs:
               DomainName=${{ vars.DOMAIN_NAME }} \
               HostedZoneId=${{ secrets.HOSTED_ZONE_ID }} \
               BucketDomainName="${{ steps.regional-output.outputs.bucket_domain_name }}" \
-              ContentBucketDomainName="${{ steps.regional-output.outputs.content_bucket_domain_name }}" \
             --capabilities CAPABILITY_IAM
       
       - name: Get Global Stack Outputs
         id: global-output
         run: |
           DISTRIBUTION_ID=$(aws cloudformation describe-stacks --stack-name $GLOBAL_STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='DistributionId'].OutputValue" --output text)
-          DISTRIBUTION_ARN=$(aws cloudformation describe-stacks --stack-name $GLOBAL_STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='distributionArn'].OutputValue" --output text)
-          OAI_ID=$(aws cloudformation describe-stack-resource --stack-name $GLOBAL_STACK_NAME --logical-resource-id CloudFrontOriginAccessIdentity --query "StackResourceDetail.PhysicalResourceId" --output text)
+          DISTRIBUTION_ARN=$(aws cloudformation describe-stacks --stack-name $GLOBAL_STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='DistributionArn'].OutputValue" --output text)
+          OAC_ID=$(aws cloudformation describe-stacks --stack-name $GLOBAL_STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='CloudFrontOriginAccessControl'].OutputValue" --output text)
 
           echo "distribution_id=$DISTRIBUTION_ID" >> $GITHUB_OUTPUT
           echo "distribution_arn=$DISTRIBUTION_ARN" >> $GITHUB_OUTPUT
-          echo "oai_id=$OAI_ID" >> $GITHUB_OUTPUT
+          echo "oac_id=$OAC_ID" >> $GITHUB_OUTPUT
 
           echo "distribution ID: $DISTRIBUTION_ID"
           echo "distribution ARN: $DISTRIBUTION_ARN"
-          echo "OAI ID: $OAI_ID"
+          echo "OAC ID: $OAC_ID"
 
       
       - name: Update Regional Stack with CloudFront ARN (eu-west-2)
@@ -105,16 +103,16 @@ jobs:
         run: |
           echo "DomainName: ${{ vars.DOMAIN_NAME }}"
           echo "CloudFrontDistributionArn: ${{ steps.global-output.outputs.distribution_arn }}"
-          echo "CloudFrontOriginAccessIdentity: ${{ steps.global-output.outputs.oai_id }}"
+          echo "CloudFrontOriginAccessControl: ${{ steps.global-output.outputs.oac_id }}"
       
-      - name: Update S3 Bucket Policies (including content bucket)
+      - name: Update S3 Bucket Policies with OAC
         env:
           DISTRIBUTION_ARN: ${{ steps.global-output.outputs.distribution_arn }}
-          OAI_ID: ${{ steps.global-output.outputs.oai_id }}
+          OAC_ID: ${{ steps.global-output.outputs.oac_id }}
         run: |
           # Using environment variables to ensure we have the values
           echo "Using distribution ARN: $DISTRIBUTION_ARN"
-          echo "Using OAI ID: $OAI_ID"
+          echo "Using OAC ID: $OAC_ID"
           
           aws cloudformation deploy \
             --template-file template-regional.yaml \
@@ -122,7 +120,7 @@ jobs:
             --parameter-overrides \
               DomainName=${{ vars.DOMAIN_NAME }} \
               CloudFrontDistributionArn=$DISTRIBUTION_ARN \
-              CloudFrontOriginAccessIdentity=$OAI_ID \
+              CloudFrontOriginAccessControl=$OAC_ID \
             --capabilities CAPABILITY_IAM
 
   build-and-deploy:
@@ -178,3 +176,8 @@ jobs:
         run: |
           echo "Using distribution ID: ${{ needs.deploy-infrastructure.outputs.distribution_id }}"
           aws cloudfront create-invalidation --distribution-id ${{ needs.deploy-infrastructure.outputs.distribution_id }} --paths "/*"
+          
+      - name: Wait for CloudFront invalidation
+        run: |
+          echo "Waiting for CloudFront cache invalidation to complete..."
+          sleep 30

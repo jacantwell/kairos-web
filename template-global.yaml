@@ -21,12 +21,16 @@ Resources:
         - DomainName: !Ref DomainName
           HostedZoneId: !Ref HostedZoneId
 
-  # CloudFront Origin Access Identity (shared between app and content buckets)
-  CloudFrontOriginAccessIdentity:
-    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+  # CloudFront Origin Access Control (preferred over OAI)
+  CloudFrontOriginAccessControl:
+    Type: AWS::CloudFront::OriginAccessControl
     Properties:
-      CloudFrontOriginAccessIdentityConfig:
-        Comment: !Sub "Origin Access Identity for ${DomainName}"
+      OriginAccessControlConfig:
+        Name: !Sub "${DomainName}-OAC"
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+        Description: !Sub "Origin Access Control for ${DomainName}"
 
   # CloudFront Distribution
   CloudFrontDistribution:
@@ -40,7 +44,8 @@ Resources:
           - DomainName: !Ref BucketDomainName
             Id: S3Origin
             S3OriginConfig:
-              OriginAccessIdentity: !Sub "origin-access-identity/cloudfront/${CloudFrontOriginAccessIdentity}"
+              OriginAccessIdentity: ""  # Empty for OAC
+            OriginAccessControlId: !Ref CloudFrontOriginAccessControl
         Enabled: true
         DefaultRootObject: index.html
         DefaultCacheBehavior:
@@ -62,6 +67,9 @@ Resources:
           MinimumProtocolVersion: TLSv1.2_2021
         CustomErrorResponses:
           - ErrorCode: 404
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+          - ErrorCode: 403
             ResponseCode: 200
             ResponsePagePath: /index.html
         HttpVersion: http2
@@ -97,9 +105,9 @@ Outputs:
   DistributionArn:
     Description: ARN of CloudFront distribution
     Value: !Sub "arn:aws:cloudfront::${AWS::AccountId}:distribution/${CloudFrontDistribution}"
-  CloudFrontOriginAccessIdentity:
-    Description: CloudFront Origin Access Identity ID
-    Value: !Ref CloudFrontOriginAccessIdentity
+  CloudFrontOriginAccessControl:
+    Description: CloudFront Origin Access Control ID
+    Value: !Ref CloudFrontOriginAccessControl
   WebsiteURL:
     Description: URL for website hosted on S3
     Value: !Sub "https://${DomainName}"
