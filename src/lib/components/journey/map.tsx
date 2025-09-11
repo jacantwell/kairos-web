@@ -11,7 +11,6 @@ import { AddPointModal } from "./add-point-modal";
 import { MapLayerMouseEvent, MapLayerTouchEvent } from "react-map-gl/maplibre";
 import { Marker as MarkerType } from "kairos-api-client-ts";
 
-// NEW imports
 import { processJourneyRoutes, ProcessedMarker } from "./utils/journey-routes";
 import { JourneyRoutesLayer } from "./journey-routes-layer";
 import { EnhancedMarker } from "./journey-marker";
@@ -38,7 +37,6 @@ export function JourneyMap({
     padding: { top: 40, bottom: 40, left: 40, right: 40 },
   });
 
-  const [isDarkMode, setIsDarkMode] = useState(false);
   const [cursor, setCursor] = useState<string>("auto");
   const [pendingPoint, setPendingPoint] = useState<{
     lat: number;
@@ -49,23 +47,6 @@ export function JourneyMap({
   const [selectedPoint, setSelectedPoint] = useState<ProcessedMarker | null>(
     null
   );
-
-    // Effect to handle dark mode
-  useEffect(() => {
-    const checkDarkMode = () => {
-      setIsDarkMode(document.documentElement.classList.contains("dark"));
-    };
-
-    checkDarkMode();
-
-    const observer = new MutationObserver(checkDarkMode);
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["class"],
-    });
-
-    return () => observer.disconnect();
-  }, []);
 
   // Process markers into journey routes
   const routes = processJourneyRoutes(journeyMarkers);
@@ -123,14 +104,10 @@ export function JourneyMap({
     setCursor(isAddingPoint ? "crosshair" : "auto");
   }, [isAddingPoint]);
 
-    // Button handler for fitting bounds
+  // Button handler for fitting bounds
   const handleFitBounds = () => {
     fitBounds();
   };
-
-  const mapStyle = isDarkMode
-    ? "mapbox://styles/mapbox/dark-v11"
-    : "mapbox://styles/mapbox/outdoors-v12";
 
   return (
     <>
@@ -140,7 +117,7 @@ export function JourneyMap({
           onMove={(evt: ViewStateChangeEvent) =>
             setCurrentViewState(evt.viewState)
           }
-          mapStyle={mapStyle}
+          mapStyle="mapbox://styles/mapbox/outdoors-v12"
           mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
           style={{ width: "100%", height: "100%" }}
           onClick={handleMapClick}
@@ -161,7 +138,7 @@ export function JourneyMap({
             </button>
           </div>
 
-                    {/* Mode indicator */}
+          {/* Mode indicator */}
           {isAddingPoint && (
             <div className="absolute top-2 left-1/2 transform -translate-x-1/2">
               <div className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg">
@@ -224,8 +201,12 @@ export function JourneyMap({
             <div className="space-y-3">
               <p className="capitalize">Type: {selectedPoint.marker_type}</p>
               {selectedPoint.notes && <p>{selectedPoint.notes}</p>}
-              {selectedPoint.timestamp && <p>{`Date:  ${selectedPoint.timestamp}`}</p>}
-              {selectedPoint.estimated_time && <p>{`ETA: ${selectedPoint.estimated_time}`}</p>}
+              {selectedPoint.timestamp && (
+                <p>{`Date:  ${selectedPoint.timestamp}`}</p>
+              )}
+              {selectedPoint.estimated_time && (
+                <p>{`ETA: ${selectedPoint.estimated_time}`}</p>
+              )}
               <p className="text-sm font-mono">
                 {selectedPoint.coordinates.coordinates[1].toFixed(6)},{" "}
                 {selectedPoint.coordinates.coordinates[0].toFixed(6)}
