@@ -36,7 +36,7 @@ Resources:
   NextJSRoutingFunction:
     Type: AWS::CloudFront::Function
     Properties:
-      Name: !Sub "nextjs-routing"
+      Name: "nextjs-routing"
       FunctionConfig:
         Comment: "Handle Next.js routing for static export"
         Runtime: cloudfront-js-1.0
