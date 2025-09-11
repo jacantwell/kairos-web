@@ -36,7 +36,9 @@ Resources:
   NextJSRoutingFunction:
     Type: AWS::CloudFront::Function
     Properties:
-      Name: "nextjs-routing"
+      Name: !Sub 
+        - "${CleanDomainName}-nextjs-routing"
+        - CleanDomainName: !Select [0, !Split [".", !Ref DomainName]]
       FunctionConfig:
         Comment: "Handle Next.js routing for static export"
         Runtime: cloudfront-js-1.0
@@ -80,6 +82,7 @@ Resources:
           - !Sub "www.${DomainName}"
         Origins:
           - DomainName: !Ref BucketDomainName
+            Description: "S3 Origin for website"
             Id: S3Origin
             S3OriginConfig:
               OriginAccessIdentity: ""  # Empty for OAC
@@ -101,7 +104,7 @@ Resources:
           MaxTTL: 31536000      # 1 year
           FunctionAssociations:
             - EventType: viewer-request
-              FunctionARN: !GetAtt NextJSRoutingFunction.FunctionARN
+              FunctionARN: !Sub "arn:aws:cloudfront::${AWS::AccountId}:function/nextjs-routing"
         CustomErrorResponses:
           - ErrorCode: 404
             ResponseCode: 200
