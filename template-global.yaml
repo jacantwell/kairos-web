@@ -80,7 +80,6 @@ Resources:
           - !Sub "www.${DomainName}"
         Origins:
           - DomainName: !Ref BucketDomainName
-            Description: "S3 Origin for website"
             Id: S3Origin
             S3OriginConfig:
               OriginAccessIdentity: ""  # Empty for OAC
