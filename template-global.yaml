@@ -32,6 +32,44 @@ Resources:
         SigningProtocol: sigv4
         Description: !Sub "Origin Access Control for ${DomainName}"
 
+  # CloudFront Function for Next.js routing
+  NextJSRoutingFunction:
+    Type: AWS::CloudFront::Function
+    Properties:
+      Name: !Sub "${DomainName}-nextjs-routing"
+      FunctionConfig:
+        Comment: "Handle Next.js routing for static export"
+        Runtime: cloudfront-js-1.0
+      FunctionCode: |
+        function handler(event) {
+            var request = event.request;
+            var uri = request.uri;
+            
+            // Don't modify requests for static assets
+            if (uri.match(/\.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|map|json|xml|txt)$/i)) {
+                return request;
+            }
+            
+            // Handle root path
+            if (uri === '/') {
+                request.uri = '/index.html';
+                return request;
+            }
+            
+            // Handle paths ending with /
+            if (uri.endsWith('/')) {
+                request.uri = uri + 'index.html';
+                return request;
+            }
+            
+            // Handle Next.js routes - add .html if no extension
+            if (!uri.includes('.') && !uri.startsWith('/_next/')) {
+                request.uri = uri + '.html';
+            }
+            
+            return request;
+        }
+
   # CloudFront Distribution
   CloudFrontDistribution:
     Type: AWS::CloudFront::Distribution
@@ -62,6 +100,18 @@ Resources:
           MinTTL: 0
           DefaultTTL: 86400     # 24 hours
           MaxTTL: 31536000      # 1 year
+          FunctionAssociations:
+            - EventType: viewer-request
+              FunctionARN: !GetAtt NextJSRoutingFunction.FunctionARN
+        CustomErrorResponses:
+          - ErrorCode: 404
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+            ErrorCachingMinTTL: 300
+          - ErrorCode: 403
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+            ErrorCachingMinTTL: 300
         ViewerCertificate:
           AcmCertificateArn: !Ref Certificate
           SslSupportMethod: sni-only
@@ -105,3 +155,6 @@ Outputs:
   WebsiteURL:
     Description: URL for website hosted on S3
     Value: !Sub "https://${DomainName}"
+  NextJSFunctionArn:
+    Description: ARN of the Next.js routing CloudFront function
+    Value: !GetAtt NextJSRoutingFunction.FunctionARN

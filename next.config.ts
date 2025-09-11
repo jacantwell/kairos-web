@@ -1,7 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
   output: 'export',
   typescript: {
     // !! WARN !!
@@ -9,6 +8,11 @@ const nextConfig: NextConfig = {
     // your project has type errors.
     // !! WARN !!
     ignoreBuildErrors: true,
+  },
+  trailingSlash: false,
+  // Custom image optimization for static export
+  images: {
+    unoptimized: true,
   },
 };
 
