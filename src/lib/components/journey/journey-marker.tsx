@@ -37,8 +37,8 @@ export function EnhancedMarker({
               ${isSelected ? 'scale-125 ring-4 ring-blue-300' : ''}
             `}
             style={{
-              width: '28px',
-              height: '28px',
+              width: '20px',
+              height: '20px',
               backgroundColor: marker.marker_type === 'past' ? journeyColor : 'white',
               border: `3px solid ${marker.marker_type === 'past' ? 'white' : journeyColor}`,
               borderRadius: '50% 50% 50% 0',
@@ -60,22 +60,22 @@ export function EnhancedMarker({
           </div>
 
           {/* Order number badge for debugging/development */}
-          {process.env.NODE_ENV === 'development' && (
+          {/* {process.env.NODE_ENV === 'development' && (
             <div
               className="absolute -top-2 -right-2 bg-gray-800 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"
               style={{ fontSize: '10px' }}
             >
               {marker.order + 1}
             </div>
-          )}
+          )} */}
 
           {/* Pulse animation for selected marker */}
           {isSelected && (
             <div
               className="absolute top-0 left-0 animate-ping"
               style={{
-                width: '28px',
-                height: '28px',
+                width: '20px',
+                height: '20px',
                 backgroundColor: journeyColor,
                 borderRadius: '50% 50% 50% 0',
                 transform: 'rotate(-45deg)',

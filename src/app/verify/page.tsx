@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useApi } from "@/lib/api/hooks/use-api";
 import { Logo } from "@/lib/components/ui/logo";
 import { Suspense } from "react";
+import { LoadingScreen } from "@/lib/components/ui/loading";
 
 function Verify() {
   const searchParams = useSearchParams();
@@ -92,7 +93,7 @@ function Verify() {
 
 export default function VerifyPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<LoadingScreen />}>
       <Verify />
     </Suspense>
   );

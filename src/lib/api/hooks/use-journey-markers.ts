@@ -73,13 +73,10 @@ export function useJourneyMarkers(journeyId: string | null) {
   const deleteMarker = useCallback(async (markerId: string) => {
     if (!journeyId || !markerId) throw new Error("Missing journey ID or marker ID");
 
-    // TODO: Implement actual delete API call when available
     const response = await api.journeys.deleteJourneyMarkerApiV1JourneysJourneyIdMarkersMarkerIdDelete(
       journeyId,
       markerId
     );
-
-    // For now, just refresh the markers list
     return loadMarkers();
   }, [journeyId, loadMarkers]);
 
