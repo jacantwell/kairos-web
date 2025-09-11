@@ -158,5 +158,5 @@ Outputs:
     Description: URL for website hosted on S3
     Value: !Sub "https://${DomainName}"
   NextJSFunctionArn:
-    Description: ARN of the Next.js routing CloudFront function
-    Value: !GetAtt NextJSRoutingFunction.FunctionARN
+    Description: ARN of the Next.js routing CloudFront function (manually created)
+    Value: !Sub "arn:aws:cloudfront::${AWS::AccountId}:function/nextjs-routing"
