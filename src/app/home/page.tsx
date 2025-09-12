@@ -14,13 +14,13 @@ export default function HomePage() {
   const {
     activeJourney,
     activeJourneyMarkers,
-    refreshActiveJourneyMarkers,
+    nearbyJourneyMarkers,
     addMarkerToActiveJourney,
     deleteMarkerFromActiveJourney,
     isLoading,
     error,
   } = useJourneys();
-
+  console.log('nearbyJourneys', nearbyJourneyMarkers)
   const handleAddPoint = async (point: Marker) => {
     if (!activeJourney?._id) {
       console.error("No active journey to add point to");
@@ -96,6 +96,7 @@ export default function HomePage() {
             {(activeJourney || isLoading) && (
               <JourneyMap
                 journeyMarkers={activeJourneyMarkers}
+                nearbyJourneyMarkers={nearbyJourneyMarkers}
                 isAddingPoint={isAddingPoint}
                 onAddPoint={handleAddPoint}
                 onDeletePoint={handleDeletePoint}

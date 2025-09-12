@@ -10,6 +10,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import { AddPointModal } from "./add-point-modal";
 import { MapLayerMouseEvent, MapLayerTouchEvent } from "react-map-gl/maplibre";
 import { Marker as MarkerType } from "kairos-api-client-ts";
+import { NearbyJourneyMarkers, useNearbyJourneyMarkers } from "@/lib/api/hooks/use-nearby-journey-markers";
 
 import { processJourneyRoutes, ProcessedMarker } from "./utils/journey-routes";
 import { JourneyRoutesLayer } from "./journey-routes-layer";
@@ -17,6 +18,7 @@ import { EnhancedMarker } from "./journey-marker";
 
 interface JourneyMapProps {
   journeyMarkers: MarkerType[];
+  nearbyJourneyMarkers: NearbyJourneyMarkers[];
   isAddingPoint: boolean;
   onAddPoint: (point: MarkerType) => void;
   onDeletePoint: (id: string) => void;
@@ -24,6 +26,7 @@ interface JourneyMapProps {
 
 export function JourneyMap({
   journeyMarkers,
+  nearbyJourneyMarkers,
   isAddingPoint,
   onAddPoint,
   onDeletePoint,
@@ -48,8 +51,18 @@ export function JourneyMap({
     null
   );
 
+  const nearbyMarkers = nearbyJourneyMarkers.flatMap((njm) => njm.markers);
+  const combinedMarkers = [
+    ...journeyMarkers,
+    ...nearbyMarkers.filter(
+      (nm) =>
+        !journeyMarkers.some(
+          (jm) => jm._id === nm._id
+        )
+    ),
+  ];
   // Process markers into journey routes
-  const routes = processJourneyRoutes(journeyMarkers);
+  const routes = processJourneyRoutes(combinedMarkers);
 
   // Auto fit bounds when routes change
   const fitBounds = useCallback(() => {

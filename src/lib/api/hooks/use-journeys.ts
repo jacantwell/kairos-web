@@ -4,6 +4,7 @@ import { useUserJourneys } from "./use-user-journeys";
 import { useActiveJourney } from "./use-active-journey";
 import { useJourneyMarkers } from "./use-journey-markers";
 import { useNearbyJourneys } from "./use-nearby-journeys";
+import { useNearbyJourneyMarkers } from "./use-nearby-journey-markers";
 
 export function useJourneys() {
   const {
@@ -16,12 +17,8 @@ export function useJourneys() {
     updateJourney,
   } = useUserJourneys();
 
-  const {
-    activeJourney,
-    activeJourneyId,
-    setAsActive,
-    clearActive,
-  } = useActiveJourney({ journeys });
+  const { activeJourney, activeJourneyId, setAsActive, clearActive } =
+    useActiveJourney({ journeys });
 
   const {
     markers: activeJourneyMarkers,
@@ -34,14 +31,27 @@ export function useJourneys() {
 
   const {
     nearbyJourneys: activeJourneyNearbyJourneys,
+    nearbyJourneyIds,
     isLoading: isNearbyLoading,
     error: nearbyError,
     loadNearbyJourneys: loadActiveJourneyNearbyJourneys,
   } = useNearbyJourneys(activeJourneyId);
 
+  const {
+    nearbyJourneyMarkers,
+    isLoading: isNearbyMarkersLoading,
+    error: nearbyMarkersError,
+    loadNearbyJourneyMarkers: loadActiveJourneyNearbyMarkers,
+  } = useNearbyJourneyMarkers(nearbyJourneyIds);
+
   // Combine loading states and errors
-  const isLoading = isJourneysLoading || isMarkersLoading || isNearbyLoading;
-  const error = journeysError || markersError || nearbyError;
+  const isLoading =
+    isJourneysLoading ||
+    isMarkersLoading ||
+    isNearbyLoading ||
+    isNearbyMarkersLoading;
+  const error =
+    journeysError || markersError || nearbyError || nearbyMarkersError;
 
   return {
     // Journey data
@@ -49,18 +59,21 @@ export function useJourneys() {
     activeJourney,
     activeJourneyMarkers,
     activeJourneyNearbyJourneys,
+    nearbyJourneyMarkers,
 
     // Loading states
     isLoading,
     isJourneysLoading,
     isMarkersLoading,
     isNearbyLoading,
+    isNearbyMarkersLoading,
 
     // Errors
     error,
     journeysError,
     markersError,
     nearbyError,
+    nearbyMarkersError,
 
     // Journey operations
     loadJourneys,
@@ -78,5 +91,6 @@ export function useJourneys() {
 
     // Nearby journey operations
     refreshActiveJourneyNearbyJourneys: loadActiveJourneyNearbyJourneys,
+    refreshActiveJourneyNearbyMarkers: loadActiveJourneyNearbyMarkers,
   };
 }
