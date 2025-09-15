@@ -16,6 +16,7 @@ export default function HomePage() {
     activeJourneyMarkers,
     nearbyJourneyMarkers,
     addMarkerToActiveJourney,
+    refreshActiveJourneyNearbyJourneys,
     deleteMarkerFromActiveJourney,
     isLoading,
     error,
@@ -32,6 +33,7 @@ export default function HomePage() {
     try {
       console.log("Adding point to journey:", activeJourney._id, point);
       await addMarkerToActiveJourney(point);
+      refreshActiveJourneyNearbyJourneys();
       console.log("Point added successfully");
     } catch (error) {
       console.error("Error adding point:", error);
@@ -50,6 +52,7 @@ export default function HomePage() {
     try {
       console.log("Deleting point:", id);
       await deleteMarkerFromActiveJourney(id);
+      refreshActiveJourneyNearbyJourneys();
       console.log("Point deleted:", id);
     } catch (error) {
       console.error("Error deleting point:", error);
