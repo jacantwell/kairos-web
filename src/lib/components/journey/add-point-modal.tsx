@@ -1,9 +1,7 @@
-// kairos/src/lib/components/journey/add-point-modal.tsx
 import { useState } from "react";
 import { Marker, Coordinates } from "kairos-api-client-ts";
 import { MarkerMarkerTypeEnum } from "kairos-api-client-ts";
 import { useJourneys } from "@/lib/api/hooks/use-journeys";
-import { MapPinPen } from "lucide-react";
 interface AddPointModalProps {
   coordinates: number[]
   onConfirm: (point: Marker) => void;

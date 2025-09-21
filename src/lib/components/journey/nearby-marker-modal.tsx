@@ -1,11 +1,9 @@
 import Link from "next/link";
 import { ProcessedMarker } from "./utils/journey-routes";
-import { NearbyJourneyMarkers } from "@/lib/api/hooks/use-nearby-journey-markers";
 import { User } from "kairos-api-client-ts";
 
 interface NearbyMarkerModalProps {
   marker: ProcessedMarker;
-  nearbyJourneyMarkers: NearbyJourneyMarkers[];
   onClose: () => void;
   ownerInfo?: User | null;
   loading?: boolean;
@@ -13,7 +11,6 @@ interface NearbyMarkerModalProps {
 
 export function NearbyMarkerModal({
   marker,
-  nearbyJourneyMarkers,
   onClose,
   ownerInfo,
   loading = false,
@@ -81,7 +78,7 @@ export function NearbyMarkerModal({
         {/* Additional info for nearby markers */}
         <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
           <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
-            This point belongs to another user's journey
+            This point belongs to another user&#39;s journey
           </p>
         </div>
       </div>
