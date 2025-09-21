@@ -17,6 +17,7 @@ export default function RegisterPage() {
     confirmed_password: "",
     name: "",
     phonenumber: "",
+    instagram: "",
     country: "",
   });
 
@@ -52,7 +53,7 @@ export default function RegisterPage() {
     <div className="min-h-screen flex items-center justify-center bg-grey-50">
       <div className="max-w-md w-full p-8 bg-white rounded-xl shadow-lg space-y-8">
         <div className="flex justify-center">
-          <LogoWithText variant="primary" size="lg" />
+          <LogoWithText size="lg" />
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
@@ -143,6 +144,21 @@ export default function RegisterPage() {
                 }
                 className="w-full px-4 py-3 border border-grey-300 placeholder-grey-400 text-grey-900 rounded-lg focus:outline-none focus:ring-primary-green-500 focus:border-primary-green-500 sm:text-sm"
                 placeholder="Phone Number (optional)"
+              />
+            </div>
+            <div>
+              <input
+                type="text"
+                required={false}
+                value={userDetails.instagram}
+                onChange={(e) =>
+                  setUserDetails((prev) => ({
+                    ...prev,
+                    instagram: e.target.value,
+                  }))
+                }
+                className="w-full px-4 py-3 border border-grey-300 placeholder-grey-400 text-grey-900 rounded-lg focus:outline-none focus:ring-primary-green-500 focus:border-primary-green-500 sm:text-sm"
+                placeholder="Instagram (optional)"
               />
             </div>
             <div>
