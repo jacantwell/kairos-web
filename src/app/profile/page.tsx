@@ -77,11 +77,19 @@ export default function ProfilePage() {
     try {
       setError(null);
 
-      const newJourney: Journey = {
+      // If the user does not have an active journey, create this one in an active state
+      let isActive: boolean;
+      if (!activeJourney) {
+        isActive = true;
+      } else {
+        isActive = false;
+      }
+
+      const newJourney = {
         name: journeyData.name,
         description: journeyData.description,
         user_id: user._id,
-        active: false,
+        active: isActive,
         created_at: new Date().toISOString(),
       };
 
