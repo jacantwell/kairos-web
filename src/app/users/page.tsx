@@ -7,12 +7,12 @@ import { useApi } from "@/lib/api/hooks/use-api";
 import { useState, useEffect } from "react";
 import { User, Journey, Marker } from "kairos-api-client-ts";
 import { LoadingScreen, LoadingSpinner } from "@/lib/components/ui/loading";
-import { MapPin, Phone } from "lucide-react";
+import { MapPin, Phone, User } from "lucide-react";
 import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
 
-
-export default function Page() {
+function UserProfile() {
   const searchParams = useSearchParams();
   const userId = searchParams.get("id");
   const api = useApi();
@@ -325,5 +325,13 @@ export default function Page() {
         </main>
       </div>
     </AuthGuard>
+  );
+}
+
+export default function UserProfilePage() {
+  return (
+    <Suspense fallback={<LoadingScreen />}>
+      <UserProfile />
+    </Suspense>
   );
 }
