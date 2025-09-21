@@ -24,6 +24,7 @@ interface JourneyMapProps {
   nearbyJourneyMarkers: NearbyJourneyMarkers[];
   isAddingPoint: boolean;
   onAddPoint: (point: MarkerType) => void;
+  onUpdatePoint?: (id: string, updatedMarker: MarkerType) => void;
   onDeletePoint: (id: string) => void;
 }
 
@@ -32,6 +33,7 @@ export function JourneyMap({
   nearbyJourneyMarkers,
   isAddingPoint,
   onAddPoint,
+  onUpdatePoint,
   onDeletePoint,
 }: JourneyMapProps) {
   const [currentViewState, setCurrentViewState] = useState<ViewState>({
@@ -160,6 +162,13 @@ export function JourneyMap({
     setSelectedPoint(null);
   };
 
+  const handleUpdateMarker = (id: string, updatedMarker: MarkerType) => {
+    if (onUpdatePoint) {
+      onUpdatePoint(id, updatedMarker);
+      setSelectedPoint(null);
+    }
+  }
+
   return (
     <>
       <div className="relative h-96 w-full overflow-hidden rounded-lg md:h-[600px]">
@@ -238,13 +247,14 @@ export function JourneyMap({
           onConfirm={onAddPoint}
           onCancel={() => setPendingPoint(null)}
         />
-      )}
+      )} 
 
       {/* Point Details Modal - User Owned */}
       {selectedPoint && isUserOwnedMarker(selectedPoint) && (
         <UserMarkerModal
           marker={selectedPoint}
           onClose={() => setSelectedPoint(null)}
+          onUpdate={handleUpdateMarker}
           onDelete={handleDeleteMarker}
         />
       )}

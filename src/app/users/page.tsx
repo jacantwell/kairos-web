@@ -7,7 +7,7 @@ import { useApi } from "@/lib/api/hooks/use-api";
 import { useState, useEffect } from "react";
 import { User, Journey, Marker } from "kairos-api-client-ts";
 import { LoadingScreen, LoadingSpinner } from "@/lib/components/ui/loading";
-import { MapPin, Phone, User } from "lucide-react";
+import { MapPin, Phone } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 
