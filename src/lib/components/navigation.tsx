@@ -1,32 +1,60 @@
-// kairos/src/lib/components/navigation.tsx
 "use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { UserMenu } from "./user-menu";
+import { CircleUserRound, CircleArrowLeft } from "lucide-react";
 
-interface NavigationProps {
-  title?: string;
-  actions?: React.ReactNode;
-}
+export const Navigation: React.FC = () => {
+  const pathname = usePathname();
 
-export const Navigation: React.FC<NavigationProps> = ({ title, actions }) => {
+  const getPageTitle = () => {
+    if (pathname === "/home") return "Map";
+    if (pathname === "/profile") return "Profile";
+    return "Kairos";
+  };
+
+  const getBackLink = () => {
+    if (pathname === "/profile") return "/home";
+    return "/home"; // Default back to home
+  };
+
+  const showBackButton = pathname !== "/home";
+  const showProfileButton = pathname !== "/profile";
+
   return (
-    <header className="bg-white shadow">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16 items-center">
-          <div className="flex items-center gap-8">
-            <h1 className="text-xl font-semibold">{title || "Kairos"}</h1>
+    <header className="bg-white shadow-sm">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6">
+        <div className="grid grid-cols-3 items-center h-14 sm:h-16">
+          {/* Left: Back button */}
+          <div className="flex justify-start">
+            {showBackButton ? (
+              <Link
+                href={getBackLink()}
+                className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                <CircleArrowLeft className="w-5 h-5 mr-1" />
+                <span className="text-sm font-medium">Back</span>
+              </Link>
+            ) : null}
           </div>
 
-          <div className="flex items-center gap-4">
-            {actions}
-            <UserMenu />
-          </div>
-        </div>
+          {/* Center: Title */}
+          <h1 className="text-lg sm:text-xl font-semibold text-gray-900 text-center">
+            {getPageTitle()}
+          </h1>
 
-        {/* Mobile Navigation */}
-        <div className="md:hidden border-t border-gray-200">
+          {/* Right: Profile button */}
+          <div className="flex justify-end">
+            {showProfileButton ? (
+              <Link
+                href={"/profile"}
+                className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                <span className="text-sm font-medium">Profile</span>
+                <CircleUserRound className="w-5 h-5 ml-1" />
+              </Link>
+            ) : null}
+          </div>
         </div>
       </div>
     </header>

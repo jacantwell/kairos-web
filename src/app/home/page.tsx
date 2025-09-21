@@ -70,7 +70,7 @@ export default function HomePage() {
   return (
     <AuthGuard>
       <div className="min-h-screen bg-gray-50">
-        <Navigation title="Map" />
+        <Navigation />
 
         <main className="max-w-7xl mx-auto py-1 sm:px-6 lg:px-8">
           <div className="px-4 sm:px-0">
@@ -184,46 +184,6 @@ export default function HomePage() {
               </div>
             )}
 
-            {/* Nearby Journeys Summary
-            {nearbyJourneyMarkers.length > 0 && (
-              <div className="mt-6 bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-medium mb-4">
-                  Nearby Journeys ({nearbyJourneyMarkers.length})
-                </h3>
-                <div className="space-y-3">
-                  {nearbyJourneyMarkers.map((nearbyJourney) => (
-                    <div
-                      key={`${nearbyJourney.user_id}-${nearbyJourney.journey_name}`}
-                      className="bg-blue-50 border border-blue-200 rounded-lg p-3"
-                    >
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <h4 className="font-medium text-blue-900">
-                            {nearbyJourney.journey_name}
-                          </h4>
-                          <p className="text-sm text-blue-700">
-                            by @{nearbyJourney.user_name}
-                          </p>
-                          <p className="text-xs text-blue-600 mt-1">
-                            {nearbyJourney.markers.length} point{nearbyJourney.markers.length !== 1 ? 's' : ''}
-                          </p>
-                        </div>
-                        <a
-                          href={`/profile/${nearbyJourney.user_id}`}
-                          className="text-xs bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded transition-colors"
-                        >
-                          View Profile
-                        </a>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <p className="text-xs text-gray-500 mt-4 text-center">
-                  Click on markers in the map to see details from other journeys
-                </p>
-              </div>
-            )} */}
-
             {/* No Active Journey Message */}
             {!isLoading && !activeJourney && !error && (
               <div className="mt-6 bg-white rounded-lg shadow p-6 text-center">
@@ -249,10 +209,10 @@ export default function HomePage() {
                   Create a journey to start planning your bikepacking adventure.
                 </p>
                 <a
-                  href="/journeys"
+                  href="/profile"
                   className="inline-flex items-center px-4 py-2 bg-primary-green-500 text-white rounded-lg hover:bg-primary-green-600 transition-colors"
                 >
-                  View Journeys
+                  Manage Journeys
                 </a>
               </div>
             )}
