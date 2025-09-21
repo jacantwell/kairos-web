@@ -1,4 +1,3 @@
-// kairos/src/lib/components/journey/journey-map.tsx
 import { useState, useEffect, useCallback } from "react";
 import Map, {
   NavigationControl,
@@ -15,7 +14,6 @@ import { Marker as MarkerType } from "kairos-api-client-ts";
 import { User } from "kairos-api-client-ts";
 import {
   NearbyJourneyMarkers,
-  useNearbyJourneyMarkers,
 } from "@/lib/api/hooks/use-nearby-journey-markers";
 import { useSession } from "@/lib/context/session";
 import { Marker } from "kairos-api-client-ts";
