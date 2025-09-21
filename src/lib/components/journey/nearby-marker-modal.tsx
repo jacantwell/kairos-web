@@ -29,7 +29,7 @@ export function NearbyMarkerModal({
             {ownerInfo && !loading && (
               <div className="mt-1">
                 <Link 
-                  href={`/users/${ownerInfo._id}/profile`}
+                  href={`/users/?id=${ownerInfo._id}`}
                   className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
                 >
                   @{ownerInfo.name}
