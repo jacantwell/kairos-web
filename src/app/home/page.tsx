@@ -21,7 +21,9 @@ export default function HomePage() {
     isLoading,
     error,
   } = useJourneys();
-  console.log('nearbyJourneys', nearbyJourneyMarkers)
+  
+  console.log('nearbyJourneyMarkers', nearbyJourneyMarkers);
+
   const handleAddPoint = async (point: Marker) => {
     if (!activeJourney?._id) {
       console.error("No active journey to add point to");
@@ -46,6 +48,11 @@ export default function HomePage() {
   const handleDeletePoint = async (id: string) => {
     if (!activeJourney?._id || !id || id.startsWith("temp-")) {
       console.warn("Cannot delete point: invalid ID or no active journey");
+      return;
+    }
+
+    if (!activeJourneyMarkers.find(marker => marker._id === id)) {
+      console.warn("Point ID not found in active journey markers:", id);
       return;
     }
 
@@ -110,7 +117,7 @@ export default function HomePage() {
             {activeJourneyMarkers.length > 0 && (
               <div className="mt-6 bg-white rounded-lg shadow p-6">
                 <h3 className="text-lg font-medium mb-4">
-                  Journey Points ({activeJourneyMarkers.length})
+                  Your Journey Points ({activeJourneyMarkers.length})
                 </h3>
                 <div className="space-y-2">
                   {activeJourneyMarkers.map((point, index) => {
@@ -176,6 +183,46 @@ export default function HomePage() {
                 </div>
               </div>
             )}
+
+            {/* Nearby Journeys Summary
+            {nearbyJourneyMarkers.length > 0 && (
+              <div className="mt-6 bg-white rounded-lg shadow p-6">
+                <h3 className="text-lg font-medium mb-4">
+                  Nearby Journeys ({nearbyJourneyMarkers.length})
+                </h3>
+                <div className="space-y-3">
+                  {nearbyJourneyMarkers.map((nearbyJourney) => (
+                    <div
+                      key={`${nearbyJourney.user_id}-${nearbyJourney.journey_name}`}
+                      className="bg-blue-50 border border-blue-200 rounded-lg p-3"
+                    >
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <h4 className="font-medium text-blue-900">
+                            {nearbyJourney.journey_name}
+                          </h4>
+                          <p className="text-sm text-blue-700">
+                            by @{nearbyJourney.user_name}
+                          </p>
+                          <p className="text-xs text-blue-600 mt-1">
+                            {nearbyJourney.markers.length} point{nearbyJourney.markers.length !== 1 ? 's' : ''}
+                          </p>
+                        </div>
+                        <a
+                          href={`/profile/${nearbyJourney.user_id}`}
+                          className="text-xs bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded transition-colors"
+                        >
+                          View Profile
+                        </a>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-500 mt-4 text-center">
+                  Click on markers in the map to see details from other journeys
+                </p>
+              </div>
+            )} */}
 
             {/* No Active Journey Message */}
             {!isLoading && !activeJourney && !error && (

@@ -6,12 +6,19 @@ import Map, {
   ViewStateChangeEvent,
 } from "react-map-gl/mapbox";
 import "mapbox-gl/dist/mapbox-gl.css";
-
+import { useApi } from "@/lib/api/hooks/use-api";
 import { AddPointModal } from "./add-point-modal";
+import { UserMarkerModal } from "./user-marker-modal";
+import { NearbyMarkerModal } from "./nearby-marker-modal";
 import { MapLayerMouseEvent, MapLayerTouchEvent } from "react-map-gl/maplibre";
 import { Marker as MarkerType } from "kairos-api-client-ts";
-import { NearbyJourneyMarkers, useNearbyJourneyMarkers } from "@/lib/api/hooks/use-nearby-journey-markers";
-
+import { User } from "kairos-api-client-ts";
+import {
+  NearbyJourneyMarkers,
+  useNearbyJourneyMarkers,
+} from "@/lib/api/hooks/use-nearby-journey-markers";
+import { useSession } from "@/lib/context/session";
+import { Marker } from "kairos-api-client-ts";
 import { processJourneyRoutes, ProcessedMarker } from "./utils/journey-routes";
 import { JourneyRoutesLayer } from "./journey-routes-layer";
 import { EnhancedMarker } from "./journey-marker";
@@ -31,6 +38,7 @@ export function JourneyMap({
   onAddPoint,
   onDeletePoint,
 }: JourneyMapProps) {
+
   const [currentViewState, setCurrentViewState] = useState<ViewState>({
     longitude: 0,
     latitude: 30,
@@ -51,14 +59,36 @@ export function JourneyMap({
     null
   );
 
+  const { user } = useSession();
+  const api = useApi();
+  const [ownerInfo, setOwnerInfo] = useState<User | null>(null);
+  const [ownerLoading, setOwnerLoading] = useState(false);
+
+  useEffect(() => {
+    if (selectedPoint && selectedPoint.owner_id) {
+      setOwnerLoading(true);
+      api.users
+        .getUserByIdApiV1UsersUserIdGet(selectedPoint.owner_id)
+        .then((response) => {
+          if (response.status === 200 && response.data) {
+            setOwnerInfo(response.data);
+          } else {
+            setOwnerInfo(null);
+          }
+        })
+        .catch(() => setOwnerInfo(null))
+        .finally(() => setOwnerLoading(false));
+    } else {
+      setOwnerInfo(null);
+      setOwnerLoading(false);
+    }
+  }, [selectedPoint?.owner_id, api.users]);
+
   const nearbyMarkers = nearbyJourneyMarkers.flatMap((njm) => njm.markers);
   const combinedMarkers = [
     ...journeyMarkers,
     ...nearbyMarkers.filter(
-      (nm) =>
-        !journeyMarkers.some(
-          (jm) => jm._id === nm._id
-        )
+      (nm) => !journeyMarkers.some((jm) => jm._id === nm._id)
     ),
   ];
   // Process markers into journey routes
@@ -120,6 +150,19 @@ export function JourneyMap({
   // Button handler for fitting bounds
   const handleFitBounds = () => {
     fitBounds();
+  };
+
+  // Check if marker is owned by current user
+  const isUserOwnedMarker = (marker: Marker): boolean => {
+    console.log("Checking ownership for marker:", marker);
+    console.log("Current user:", user);
+    if (!user?._id) return false;
+    return marker.owner_id === user._id;
+  };
+
+  const handleDeleteMarker = (markerId: string) => {
+    onDeletePoint(markerId);
+    setSelectedPoint(null);
   };
 
   return (
@@ -202,49 +245,24 @@ export function JourneyMap({
         />
       )}
 
-      {/* Point Details Modal */}
-      {selectedPoint && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-slate-800 rounded-lg p-6 max-w-sm w-full mx-4">
-            <div className="flex justify-between items-start mb-4">
-              <h3 className="text-lg font-semibold">{selectedPoint.name}</h3>
-              <button onClick={() => setSelectedPoint(null)}>✕</button>
-            </div>
+      {/* Point Details Modal - User Owned */}
+      {selectedPoint && isUserOwnedMarker(selectedPoint) && (
+        <UserMarkerModal
+          marker={selectedPoint}
+          onClose={() => setSelectedPoint(null)}
+          onDelete={handleDeleteMarker}
+        />
+      )}
 
-            <div className="space-y-3">
-              <p className="capitalize">Type: {selectedPoint.marker_type}</p>
-              {selectedPoint.notes && <p>{selectedPoint.notes}</p>}
-              {selectedPoint.timestamp && (
-                <p>{`Date:  ${selectedPoint.timestamp}`}</p>
-              )}
-              {selectedPoint.estimated_time && (
-                <p>{`ETA: ${selectedPoint.estimated_time}`}</p>
-              )}
-              <p className="text-sm font-mono">
-                {selectedPoint.coordinates.coordinates[1].toFixed(6)},{" "}
-                {selectedPoint.coordinates.coordinates[0].toFixed(6)}
-              </p>
-            </div>
-
-            <div className="mt-6 flex gap-3">
-              <button
-                onClick={() => setSelectedPoint(null)}
-                className="flex-1 px-4 py-2 bg-gray-200 rounded-lg"
-              >
-                Close
-              </button>
-              <button
-                onClick={() => {
-                  onDeletePoint(selectedPoint._id || "");
-                  setSelectedPoint(null);
-                }}
-                className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
+      {/* Point Details Modal - Nearby User */}
+      {selectedPoint && !isUserOwnedMarker(selectedPoint) && (
+        <NearbyMarkerModal
+          marker={selectedPoint}
+          nearbyJourneyMarkers={nearbyJourneyMarkers}
+          onClose={() => setSelectedPoint(null)}
+          ownerInfo={ownerInfo}
+          loading={ownerLoading}
+        />
       )}
     </>
   );
