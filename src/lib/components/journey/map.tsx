@@ -12,9 +12,7 @@ import { NearbyMarkerModal } from "./nearby-marker-modal";
 import { MapLayerMouseEvent, MapLayerTouchEvent } from "react-map-gl/maplibre";
 import { Marker as MarkerType } from "kairos-api-client-ts";
 import { User } from "kairos-api-client-ts";
-import {
-  NearbyJourneyMarkers,
-} from "@/lib/api/hooks/use-nearby-journey-markers";
+import { NearbyJourneyMarkers } from "@/lib/api/hooks/use-nearby-journey-markers";
 import { useSession } from "@/lib/context/session";
 import { Marker } from "kairos-api-client-ts";
 import { processJourneyRoutes, ProcessedMarker } from "./utils/journey-routes";
@@ -36,7 +34,6 @@ export function JourneyMap({
   onAddPoint,
   onDeletePoint,
 }: JourneyMapProps) {
-
   const [currentViewState, setCurrentViewState] = useState<ViewState>({
     longitude: 0,
     latitude: 30,
@@ -146,9 +143,9 @@ export function JourneyMap({
   }, [isAddingPoint]);
 
   // Button handler for fitting bounds
-  const handleFitBounds = () => {
-    fitBounds();
-  };
+  // const handleFitBounds = () => {
+  //   fitBounds();
+  // };
 
   // Check if marker is owned by current user
   const isUserOwnedMarker = (marker: Marker): boolean => {
@@ -256,7 +253,6 @@ export function JourneyMap({
       {selectedPoint && !isUserOwnedMarker(selectedPoint) && (
         <NearbyMarkerModal
           marker={selectedPoint}
-          nearbyJourneyMarkers={nearbyJourneyMarkers}
           onClose={() => setSelectedPoint(null)}
           ownerInfo={ownerInfo}
           loading={ownerLoading}

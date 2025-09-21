@@ -6,13 +6,11 @@ import { MapPinPlusInside, CircleX } from "lucide-react";
 interface ActiveJourneyBannerProps {
   isAddingPoint: boolean;
   setIsAddingPoint: React.Dispatch<React.SetStateAction<boolean>>;
-  onViewJourney?: () => void;
 }
 
 export function ActiveJourneyBanner({
   isAddingPoint,
   setIsAddingPoint,
-  onViewJourney,
 }: ActiveJourneyBannerProps) {
   const { activeJourney, isJourneysLoading, isMarkersLoading } = useJourneys();
 

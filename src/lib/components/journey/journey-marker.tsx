@@ -16,7 +16,7 @@ export function EnhancedMarker({
   isOwnMarker = true,
   onMarkerClick,
 }: EnhancedMarkerProps) {
-  const style = getMarkerStyle(marker, journeyColor);
+  // const style = getMarkerStyle(marker, journeyColor);
 
   // Adjust styling for nearby markers (not owned by user)
   const markerColor = isOwnMarker ? journeyColor : '#6B7280'; // Gray for others' markers
