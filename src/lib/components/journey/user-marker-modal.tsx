@@ -1,4 +1,3 @@
-// kairos/src/lib/components/journey/user-marker-modal.tsx
 import { ProcessedMarker } from "./utils/journey-routes";
 
 interface UserMarkerModalProps {

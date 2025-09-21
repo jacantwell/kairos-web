@@ -1,4 +1,3 @@
-// kairos/src/lib/components/journey/journey-map.tsx
 import { useState, useEffect, useCallback } from "react";
 import Map, {
   NavigationControl,
