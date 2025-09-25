@@ -80,6 +80,22 @@ export function useJourneyMarkers(journeyId: string | null) {
     [journeyId, api.journeys, loadMarkers]
   );
 
+  const updateMarker = useCallback(
+    async (markerId: string, updatedMarker: Marker) => {
+      if (!journeyId || !markerId)
+        throw new Error("Missing journey ID or marker ID");
+
+      await api.journeys.updateJourneyMarkerApiV1JourneysJourneyIdMarkersMarkerIdPut(
+          journeyId,
+          markerId,
+          updatedMarker
+        );
+
+      return loadMarkers();
+    },
+    [journeyId, loadMarkers, api.journeys]
+  );
+
   const deleteMarker = useCallback(
     async (markerId: string) => {
       if (!journeyId || !markerId)
@@ -100,6 +116,7 @@ export function useJourneyMarkers(journeyId: string | null) {
     error,
     loadMarkers,
     addMarker,
+    updateMarker,
     deleteMarker,
   };
 }

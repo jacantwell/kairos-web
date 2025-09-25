@@ -10,19 +10,21 @@ import { Marker } from "kairos-api-client-ts";
 
 export default function HomePage() {
   const [isAddingPoint, setIsAddingPoint] = useState(false);
-  
+
   const {
     activeJourney,
     activeJourneyMarkers,
     nearbyJourneyMarkers,
     addMarkerToActiveJourney,
     refreshActiveJourneyNearbyJourneys,
+    refreshActiveJourneyMarkers,
+    updateMarkerOfActiveJourney,
     deleteMarkerFromActiveJourney,
     isLoading,
     error,
   } = useJourneys();
-  
-  console.log('nearbyJourneyMarkers', nearbyJourneyMarkers);
+
+  console.log("nearbyJourneyMarkers", nearbyJourneyMarkers);
 
   const handleAddPoint = async (point: Marker) => {
     if (!activeJourney?._id) {
@@ -39,7 +41,7 @@ export default function HomePage() {
       console.log("Point added successfully");
     } catch (error) {
       console.error("Error adding point:", error);
-      // You might want to show a toast notification here
+      // Add toast notification here
     } finally {
       setIsAddingPoint(false);
     }
@@ -51,19 +53,37 @@ export default function HomePage() {
       return;
     }
 
-    if (!activeJourneyMarkers.find(marker => marker._id === id)) {
+    if (!activeJourneyMarkers.find((marker) => marker._id === id)) {
       console.warn("Point ID not found in active journey markers:", id);
       return;
     }
 
     try {
-      console.log("Deleting point:", id);
       await deleteMarkerFromActiveJourney(id);
       refreshActiveJourneyNearbyJourneys();
+    } catch (error) {
+      console.error("Error deleting point:", error);
+    }
+  };
+
+  const handleUpdatePoint = async (id: string, updatedMarker: Marker) => {
+    if (!activeJourney?._id || !id || id.startsWith("temp-")) {
+      console.warn("Cannot delete point: invalid ID or no active journey");
+      return;
+    }
+
+    if (!activeJourneyMarkers.find((marker) => marker._id === id)) {
+      console.warn("Point ID not found in active journey markers:", id);
+      return;
+    }
+
+    try {
+      await updateMarkerOfActiveJourney(id, updatedMarker);
+      refreshActiveJourneyMarkers();
       console.log("Point deleted:", id);
     } catch (error) {
       console.error("Error deleting point:", error);
-      // You might want to show a toast notification here
+      // Add a toast notification
     }
   };
 
@@ -109,6 +129,7 @@ export default function HomePage() {
                 nearbyJourneyMarkers={nearbyJourneyMarkers}
                 isAddingPoint={isAddingPoint}
                 onAddPoint={handleAddPoint}
+                onUpdatePoint={handleUpdatePoint}
                 onDeletePoint={handleDeletePoint}
               />
             )}
@@ -121,15 +142,17 @@ export default function HomePage() {
                 </h3>
                 <div className="space-y-2">
                   {activeJourneyMarkers.map((point, index) => {
-                    const listKey = point._id || `point-${index}-${point.name}-${Date.now()}`;
-                    const isTemporary = !point._id || point._id.startsWith("temp-");
+                    const listKey =
+                      point._id || `point-${index}-${point.name}-${Date.now()}`;
+                    const isTemporary =
+                      !point._id || point._id.startsWith("temp-");
 
                     return (
                       <div
                         key={listKey}
                         className={`flex justify-between items-center p-3 rounded ${
-                          isTemporary 
-                            ? "bg-yellow-50 border border-yellow-200" 
+                          isTemporary
+                            ? "bg-yellow-50 border border-yellow-200"
                             : "bg-gray-50"
                         }`}
                       >
@@ -143,7 +166,9 @@ export default function HomePage() {
                             )}
                           </div>
                           {point.notes && (
-                            <p className="text-sm text-gray-500 mt-1">{point.notes}</p>
+                            <p className="text-sm text-gray-500 mt-1">
+                              {point.notes}
+                            </p>
                           )}
                           <p className="text-xs text-gray-400 mt-1">
                             {point.coordinates.coordinates[1].toFixed(6)},{" "}
@@ -160,7 +185,11 @@ export default function HomePage() {
                               ? "text-gray-300 cursor-not-allowed"
                               : "text-red-500 hover:text-red-700"
                           }`}
-                          title={isTemporary ? "Cannot delete unsaved point" : "Delete point"}
+                          title={
+                            isTemporary
+                              ? "Cannot delete unsaved point"
+                              : "Delete point"
+                          }
                           disabled={isTemporary}
                         >
                           <svg

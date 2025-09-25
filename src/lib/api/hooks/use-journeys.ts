@@ -26,6 +26,7 @@ export function useJourneys() {
     error: markersError,
     loadMarkers: loadActiveJourneyMarkers,
     addMarker: addMarkerToActiveJourney,
+    updateMarker: updateMarkerOfActiveJourney,
     deleteMarker: deleteMarkerFromActiveJourney,
   } = useJourneyMarkers(activeJourneyId);
 
@@ -87,6 +88,7 @@ export function useJourneys() {
     // Marker operations
     refreshActiveJourneyMarkers: loadActiveJourneyMarkers,
     addMarkerToActiveJourney,
+    updateMarkerOfActiveJourney,
     deleteMarkerFromActiveJourney,
 
     // Nearby journey operations
