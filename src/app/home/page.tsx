@@ -68,7 +68,7 @@ export default function HomePage() {
 
   const handleUpdatePoint = async (id: string, updatedMarker: Marker) => {
     if (!activeJourney?._id || !id || id.startsWith("temp-")) {
-      console.warn("Cannot delete point: invalid ID or no active journey");
+      console.warn("Cannot update point: invalid ID or no active journey");
       return;
     }
 
@@ -80,9 +80,10 @@ export default function HomePage() {
     try {
       await updateMarkerOfActiveJourney(id, updatedMarker);
       refreshActiveJourneyMarkers();
-      console.log("Point deleted:", id);
+      refreshActiveJourneyNearbyJourneys();
+      console.log("Point updated:", id);
     } catch (error) {
-      console.error("Error deleting point:", error);
+      console.error("Error updating point:", error);
       // Add a toast notification
     }
   };

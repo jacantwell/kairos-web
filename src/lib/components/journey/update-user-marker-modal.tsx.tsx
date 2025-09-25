@@ -1,18 +1,22 @@
 import { ProcessedMarker } from "./utils/journey-routes";
 import { useState } from "react";
-import { Marker } from "kairos-api-client-ts";
+import { Marker, Coordinates } from "kairos-api-client-ts";
 import { MarkerMarkerTypeEnum } from "kairos-api-client-ts";
 
 interface UpdateUserMarkerModalProps {
   marker: ProcessedMarker;
   onCancel: () => void;
   onConfirm: (id: string, updatedMarker: Marker) => void;
+  onStartPositionSelection: () => void;
+  newPosition?: { lat: number; lng: number } | null;
 }
 
 export function UpdateUserMarkerModal({
   marker,
   onCancel,
   onConfirm,
+  onStartPositionSelection,
+  newPosition,
 }: UpdateUserMarkerModalProps) {
   const [formData, setFormData] = useState({
     ...marker,
@@ -23,6 +27,11 @@ export function UpdateUserMarkerModal({
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Use new position if available, otherwise use original coordinates
+  const currentCoordinates = newPosition 
+    ? [newPosition.lng, newPosition.lat] 
+    : marker.coordinates.coordinates;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -30,23 +39,28 @@ export function UpdateUserMarkerModal({
       return;
     }
 
+    setIsSubmitting(true);
+
     try {
       const updatedMarker: Marker = {
         name: formData.name.trim(),
         journey_id: marker.journey_id,
         notes: formData.notes?.trim(),
-        coordinates: marker.coordinates,
+        coordinates: {
+          type: "Point",
+          coordinates: currentCoordinates
+        } as Coordinates,
         marker_type: formData.marker_type as MarkerMarkerTypeEnum,
         estimated_time:
-          marker.estimated_time?.trim() || marker.timestamp?.trim() || "",
+          formData.marker_type === 'plan' ? formData.estimated_time : undefined,
         timestamp:
-          marker.timestamp?.trim() || marker.estimated_time?.trim() || "",
+          formData.marker_type === 'past' ? formData.timestamp : undefined,
       };
 
       onConfirm(marker._id || "", updatedMarker);
       onCancel(); // Closes the modal
     } catch (error) {
-      console.error("Error creating point:", error);
+      console.error("Error updating point:", error);
       // TODO Handle error + show error
     } finally {
       setIsSubmitting(false);
@@ -64,18 +78,19 @@ export function UpdateUserMarkerModal({
       [name]: value,
     }));
   };
+
   const pointTypeOptions = [
     { value: "plan", label: "Plan" },
     { value: "past", label: "Past" },
   ];
 
-  const [longitude, latitude] = marker.coordinates.coordinates; // Note: GeoJSON format is [lng, lat]
+  const [longitude, latitude] = currentCoordinates; // Note: GeoJSON format is [lng, lat]
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white dark:bg-slate-800 rounded-lg p-6 max-w-md w-full mx-4">
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-semibold">Add Journey Point</h3>
+          <h3 className="text-lg font-semibold">Update Journey Point</h3>
           <button
             onClick={onCancel}
             className="text-gray-400 hover:text-gray-600"
@@ -112,7 +127,7 @@ export function UpdateUserMarkerModal({
               value={formData.name}
               onChange={handleInputChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-green-500 focus:border-primary-green-500 dark:bg-slate-700 dark:border-slate-600 dark:text-white"
-              placeholder={`${marker.name}`}
+              placeholder="Enter a name for this point"
               required
               disabled={isSubmitting}
             />
@@ -190,22 +205,37 @@ export function UpdateUserMarkerModal({
             <textarea
               id="notes"
               name="notes"
-              value={formData.notes}
+              value={formData.notes || ""}
               onChange={handleInputChange}
               rows={3}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-green-500 focus:border-primary-green-500 dark:bg-slate-700 dark:border-slate-600 dark:text-white"
-              placeholder={`${marker.notes}`}
+              placeholder="Optional notes"
               disabled={isSubmitting}
             />
           </div>
 
           <div className="bg-gray-50 dark:bg-slate-700 p-3 rounded-lg">
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              <strong>Location:</strong>
-            </p>
+            <div className="flex justify-between items-start mb-2">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                <strong>Location:</strong>
+              </p>
+              <button
+                type="button"
+                onClick={onStartPositionSelection}
+                className="text-xs text-blue-500 hover:text-blue-700 underline"
+                disabled={isSubmitting}
+              >
+                Change Position
+              </button>
+            </div>
             <p className="text-sm font-mono text-gray-700 dark:text-gray-300">
               {latitude.toFixed(6)}, {longitude.toFixed(6)}
             </p>
+            {newPosition && (
+              <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                ✓ New position selected
+              </p>
+            )}
           </div>
 
           <div className="flex gap-3 pt-4">
@@ -223,7 +253,7 @@ export function UpdateUserMarkerModal({
               disabled={isSubmitting || !formData.name.trim()}
             >
               {isSubmitting ? (
-                <>
+                <div className="flex items-center justify-center">
                   <svg
                     className="animate-spin h-4 w-4 mr-2"
                     viewBox="0 0 24 24"
@@ -244,7 +274,7 @@ export function UpdateUserMarkerModal({
                     />
                   </svg>
                   Updating...
-                </>
+                </div>
               ) : (
                 "Update Point"
               )}

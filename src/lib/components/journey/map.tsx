@@ -18,6 +18,8 @@ import { Marker } from "kairos-api-client-ts";
 import { processJourneyRoutes, ProcessedMarker } from "./utils/journey-routes";
 import { JourneyRoutesLayer } from "./journey-routes-layer";
 import { EnhancedMarker } from "./journey-marker";
+import { PositionSelectionOverlay } from "./position-selection-overlay";
+import { usePositionSelection } from "@/lib/api/hooks/use-position-selection";
 
 interface JourneyMapProps {
   journeyMarkers: MarkerType[];
@@ -56,10 +58,21 @@ export function JourneyMap({
     null
   );
 
+  // Position selection for updating markers
+  const {
+    isSelectingPosition,
+    pendingPosition,
+    startPositionSelection,
+    handleMapClick: handlePositionSelectionClick,
+    cancelPositionSelection,
+    confirmPosition,
+  } = usePositionSelection();
+
   const { user } = useSession();
   const api = useApi();
   const [ownerInfo, setOwnerInfo] = useState<User | null>(null);
   const [ownerLoading, setOwnerLoading] = useState(false);
+const [showUpdateModal, setShowUpdateModal] = useState(true);
 
   useEffect(() => {
     if (selectedPoint && selectedPoint.owner_id) {
@@ -129,30 +142,33 @@ export function JourneyMap({
     }));
   }, [routes]);
 
-  // Handle map click for adding points
+  // Handle map click for different modes
   const handleMapClick = useCallback(
     (event: MapLayerMouseEvent | MapLayerTouchEvent) => {
-      if (!isAddingPoint) return;
       const { lng, lat } = event.lngLat;
-      setPendingPoint({ lat, lng });
+      
+      // Priority 1: Position selection for updating markers
+      if (isSelectingPosition) {
+        handlePositionSelectionClick(lng, lat);
+        return;
+      }
+      
+      // Priority 2: Adding new points
+      if (isAddingPoint) {
+        setPendingPoint({ lat, lng });
+        return;
+      }
     },
-    [isAddingPoint]
+    [isAddingPoint, isSelectingPosition, handlePositionSelectionClick]
   );
 
   // Mouse cursor
   const handleMouseMove = useCallback(() => {
-    setCursor(isAddingPoint ? "crosshair" : "auto");
-  }, [isAddingPoint]);
-
-  // Button handler for fitting bounds
-  // const handleFitBounds = () => {
-  //   fitBounds();
-  // };
+    setCursor(isAddingPoint || isSelectingPosition ? "crosshair" : "auto");
+  }, [isAddingPoint, isSelectingPosition]);
 
   // Check if marker is owned by current user
   const isUserOwnedMarker = (marker: Marker): boolean => {
-    console.log("Checking ownership for marker:", marker);
-    console.log("Current user:", user);
     if (!user?._id) return false;
     return marker.owner_id === user._id;
   };
@@ -167,7 +183,17 @@ export function JourneyMap({
       onUpdatePoint(id, updatedMarker);
       setSelectedPoint(null);
     }
+  };
+
+  // Handle position confirmation for updating markers
+  const handleConfirmPosition = () => {
+  const position = confirmPosition();
+  if (selectedPoint) {
+    // reopen update modal with the new coords
+    setSelectedPoint({ ...selectedPoint, coordinates: { type: "Point", coordinates: [position!.lng, position!.lat] } });
   }
+    return position;
+  };
 
   return (
     <>
@@ -198,8 +224,8 @@ export function JourneyMap({
             </button>
           </div>
 
-          {/* Mode indicator */}
-          {isAddingPoint && (
+          {/* Mode indicator for adding points */}
+          {isAddingPoint && !isSelectingPosition && (
             <div className="absolute top-2 left-1/2 transform -translate-x-1/2">
               <div className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg">
                 <div className="flex items-center gap-2">
@@ -222,6 +248,14 @@ export function JourneyMap({
             </div>
           )}
 
+          {/* Position Selection Overlay */}
+          <PositionSelectionOverlay
+            isSelecting={isSelectingPosition}
+            pendingPosition={pendingPosition}
+            onConfirm={handleConfirmPosition}
+            onCancel={cancelPositionSelection}
+          />
+
           {/* Route lines */}
           <JourneyRoutesLayer routes={routes} />
 
@@ -241,7 +275,7 @@ export function JourneyMap({
       </div>
 
       {/* Add Point Modal */}
-      {pendingPoint && (
+      {pendingPoint && !isSelectingPosition && (
         <AddPointModal
           coordinates={[pendingPoint.lng, pendingPoint.lat]}
           onConfirm={onAddPoint}
@@ -253,9 +287,13 @@ export function JourneyMap({
       {selectedPoint && isUserOwnedMarker(selectedPoint) && (
         <UserMarkerModal
           marker={selectedPoint}
-          onClose={() => setSelectedPoint(null)}
+          onClose={() => {
+            setSelectedPoint(null);
+            cancelPositionSelection();
+          }}
           onUpdate={handleUpdateMarker}
           onDelete={handleDeleteMarker}
+          onMapClick={handlePositionSelectionClick}
         />
       )}
 
