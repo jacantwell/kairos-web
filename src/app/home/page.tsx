@@ -17,6 +17,7 @@ export default function HomePage() {
     nearbyJourneyMarkers,
     addMarkerToActiveJourney,
     refreshActiveJourneyNearbyJourneys,
+    refreshActiveJourneyMarkers,
     updateMarkerOfActiveJourney,
     deleteMarkerFromActiveJourney,
     isLoading,
@@ -78,7 +79,7 @@ export default function HomePage() {
 
     try {
       await updateMarkerOfActiveJourney(id, updatedMarker);
-      refreshActiveJourneyNearbyJourneys();
+      refreshActiveJourneyMarkers();
       console.log("Point deleted:", id);
     } catch (error) {
       console.error("Error deleting point:", error);
