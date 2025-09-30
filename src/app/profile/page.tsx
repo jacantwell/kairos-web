@@ -374,9 +374,8 @@ export default function ProfilePage() {
               />
 
               {/* Create Journey Card */}
-              {/* Create Journey Card */}
               <div
-                className="border-2 border-dashed border-gray-200 rounded-lg p-4 sm:p-6 hover:border-primary-green-300 hover:bg-primary-green-50 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-green-500"
+                className="border-2 border-dashed border-gray-200 rounded-lg p-4 sm:p-6 hover:border-primary-green-300 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-green-500"
                 tabIndex={0}
                 role="button"
                 onClick={() => setIsCreateModalOpen(true)}
