@@ -14,11 +14,11 @@ export function ActiveJourneyCard({
   if (journey.active) {
     return (
       <div className="w-full text-left p-4 rounded-lg border transition-colors border-gray-200 hover:border-primary-green-300">
-        <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-1">
+        <h3 className="text-base font-semibold text-gray-900 mb-1">
           {journey.name}
         </h3>
         {journey.description && (
-          <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">
+          <p className="text-sm text-gray-600 line-clamp-2">
             {journey.description}
           </p>
         )}
@@ -60,11 +60,11 @@ export function ActiveJourneyCard({
             : "border-gray-200 hover:border-primary-green-300"
         }`}
       >
-        <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-1">
+        <h3 className="text-base font-semibold text-gray-900 mb-1">
           {journey.name}
         </h3>
         {journey.description && (
-          <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">
+          <p className="text-sm text-gray-600 line-clamp-2">
             {journey.description}
           </p>
         )}

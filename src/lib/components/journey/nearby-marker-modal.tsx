@@ -17,7 +17,7 @@ export function NearbyMarkerModal({
 }: NearbyMarkerModalProps) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-slate-800 rounded-lg p-6 max-w-sm w-full mx-4">
+      <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
         <div className="flex justify-between items-start mb-4">
           <div className="flex-1">
             <h3 className="text-lg font-semibold">{marker.name}</h3>
@@ -30,11 +30,11 @@ export function NearbyMarkerModal({
               <div className="mt-1">
                 <Link 
                   href={`/users/?id=${ownerInfo._id}`}
-                  className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
+                  className="text-sm text-blue-600 hover:text-blue-800 font-medium"
                 >
                   @{ownerInfo.name}
                 </Link>
-                {/* <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                {/* <p className="text-xs text-gray-500 mt-1">
                   from "{ownerInfo.journey_name}"
                 </p> */}
               </div>
@@ -76,8 +76,8 @@ export function NearbyMarkerModal({
         </div>
 
         {/* Additional info for nearby markers */}
-        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
-          <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+        <div className="mt-4 pt-4 border-t border-gray-200">
+          <p className="text-xs text-gray-500 text-center">
             This point belongs to another user&#39;s journey
           </p>
         </div>

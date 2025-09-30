@@ -1,4 +1,3 @@
-// kairos/src/lib/components/journey/create-journey-modal.tsx
 import { useState } from "react";
 
 interface CreateJourneyModalProps {
@@ -81,9 +80,9 @@ export function CreateJourneyModal({ onConfirm, onCancel }: CreateJourneyModalPr
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-slate-800 rounded-lg p-6 max-w-md w-full mx-4">
+      <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Create New Journey</h3>
+          <h3 className="text-lg font-semibold text-gray-900">Create New Journey</h3>
           <button
             onClick={handleCancel}
             disabled={isSubmitting}
@@ -97,7 +96,7 @@ export function CreateJourneyModal({ onConfirm, onCancel }: CreateJourneyModalPr
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
               Journey Name *
             </label>
             <input
@@ -106,10 +105,10 @@ export function CreateJourneyModal({ onConfirm, onCancel }: CreateJourneyModalPr
               name="name"
               value={formData.name}
               onChange={handleInputChange}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-green-500 focus:border-primary-green-500 dark:bg-slate-700 dark:text-white ${
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-green-500 focus:border-primary-green-500 ${
                 errors.name 
-                  ? 'border-red-300 dark:border-red-600' 
-                  : 'border-gray-300 dark:border-slate-600'
+                  ? 'border-red-300' 
+                  : 'border-gray-300'
               }`}
               placeholder="Enter a name for your journey"
               disabled={isSubmitting}
@@ -129,7 +128,7 @@ export function CreateJourneyModal({ onConfirm, onCancel }: CreateJourneyModalPr
           </div>
 
           <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
               Description
             </label>
             <textarea
@@ -138,10 +137,10 @@ export function CreateJourneyModal({ onConfirm, onCancel }: CreateJourneyModalPr
               value={formData.description}
               onChange={handleInputChange}
               rows={3}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-green-500 focus:border-primary-green-500 dark:bg-slate-700 dark:text-white resize-none ${
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-green-500 focus:border-primary-green-500 resize-none ${
                 errors.description 
-                  ? 'border-red-300 dark:border-red-600' 
-                  : 'border-gray-300 dark:border-slate-600'
+                  ? 'border-red-300' 
+                  : 'border-gray-300'
               }`}
               placeholder="Optional description of your journey plans"
               disabled={isSubmitting}
@@ -160,16 +159,16 @@ export function CreateJourneyModal({ onConfirm, onCancel }: CreateJourneyModalPr
             </div>
           </div>
 
-          <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+          <div className="bg-blue-50 p-4 rounded-lg">
             <div className="flex items-start gap-2">
               <svg className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
               </svg>
               <div className="text-sm">
-                <p className="font-medium text-blue-800 dark:text-blue-300 mb-1">
+                <p className="font-medium text-blue-800 mb-1">
                   About Journeys
                 </p>
-                <p className="text-blue-700 dark:text-blue-400">
+                <p className="text-blue-700">
                   Journeys help you organize your bikepacking trips. You can add markers, plan routes, and track your progress. New journeys are created as active by default.
                 </p>
               </div>

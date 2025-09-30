@@ -33,9 +33,9 @@ export function ActiveJourneyModal({ onCancel, onConfirm }: ActiveJourneyModalPr
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-slate-800 rounded-lg p-6 max-w-lg w-full mx-4">
+      <div className="bg-white rounded-lg p-6 max-w-lg w-full mx-4">
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+          <h3 className="text-lg font-semibold text-gray-900">
             Select your active journey
           </h3>
           <button

@@ -190,7 +190,7 @@ export function JourneyMap({
           <div className="absolute left-2 top-2 space-y-2">
             <button
               onClick={fitBounds}
-              className="rounded bg-white p-2 shadow dark:bg-slate-700"
+              className="rounded bg-white p-2 shadow"
               title="Fit map to journeys"
               disabled={routes.length === 0}
             >

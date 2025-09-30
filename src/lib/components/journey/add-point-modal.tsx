@@ -74,7 +74,7 @@ export function AddPointModal({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-slate-800 rounded-lg p-6 max-w-md w-full mx-4">
+      <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-lg font-semibold">Add Journey Point</h3>
           <button
@@ -90,7 +90,7 @@ export function AddPointModal({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
               Point Name *
             </label>
             <input
@@ -99,7 +99,7 @@ export function AddPointModal({
               name="name"
               value={formData.name}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-green-500 focus:border-primary-green-500 dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-green-500 focus:border-primary-green-500"
               placeholder="Enter a name for this point"
               required
               disabled={isSubmitting}
@@ -107,7 +107,7 @@ export function AddPointModal({
           </div>
 
           <div>
-            <label htmlFor="type" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-2">
               Point Type
             </label>
             <select
@@ -115,7 +115,7 @@ export function AddPointModal({
               name="type"
               value={formData.type}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-green-500 focus:border-primary-green-500 dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-green-500 focus:border-primary-green-500"
               disabled={isSubmitting}
             >
               {pointTypeOptions.map(option => (
@@ -128,7 +128,7 @@ export function AddPointModal({
 
           {(formData.type === 'plan') && (
             <div>
-              <label htmlFor="estimateTime" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label htmlFor="estimateTime" className="block text-sm font-medium text-gray-700 mb-2">
                 ETA
               </label>
               <input
@@ -137,14 +137,14 @@ export function AddPointModal({
                 name="estimateTime"
                 value={formData.estimateTime}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-green-500 focus:border-primary-green-500 dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-green-500 focus:border-primary-green-500"
                 disabled={isSubmitting}
               />
             </div>
           )}
           {(formData.type === 'past') && (
             <div>
-              <label htmlFor="timestamp" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label htmlFor="timestamp" className="block text-sm font-medium text-gray-700 mb-2">
                 Date
               </label>
               <input
@@ -153,14 +153,14 @@ export function AddPointModal({
                 name="timestamp"
                 value={formData.timestamp}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-green-500 focus:border-primary-green-500 dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-green-500 focus:border-primary-green-500"
                 disabled={isSubmitting}
               />
             </div>
           )}
 
           <div>
-            <label htmlFor="notes" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-2">
               Notes
             </label>
             <textarea
@@ -169,17 +169,17 @@ export function AddPointModal({
               value={formData.notes}
               onChange={handleInputChange}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-green-500 focus:border-primary-green-500 dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-green-500 focus:border-primary-green-500"
               placeholder="Optional notes"
               disabled={isSubmitting}
             />
           </div>
 
-          <div className="bg-gray-50 dark:bg-slate-700 p-3 rounded-lg">
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+          <div className="bg-gray-50 p-3 rounded-lg">
+            <p className="text-sm text-gray-600">
               <strong>Location:</strong>
             </p>
-            <p className="text-sm font-mono text-gray-700 dark:text-gray-300">
+            <p className="text-sm font-mono text-gray-700">
               {latitude.toFixed(6)}, {longitude.toFixed(6)}
             </p>
           </div>
