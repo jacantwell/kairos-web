@@ -1,6 +1,6 @@
 import { ProcessedMarker } from "./utils/journey-routes";
 import { useState } from "react";
-import { UpdateUserMarkerModal } from "./update-user-marker-modal.tsx";
+import { UpdateUserMarkerModal } from "./update-user-marker-modal";
 import { Marker } from "kairos-api-client-ts";
 interface UserMarkerModalProps {
   marker: ProcessedMarker;
