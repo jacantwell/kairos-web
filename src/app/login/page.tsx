@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { useSession } from "@/lib/context/session";
+import { useSession } from "@/lib/context/session-provider";
 import { useRouter } from "next/navigation";
 import { Logo } from "@/lib/components/ui/logo";
 import { LoadingSpinner } from "@/lib/components/ui/loading";
@@ -18,10 +18,10 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Prevent double submission
     if (isSubmitting || isLoading) return;
-    
+
     clearError();
     setIsSubmitting(true);
 
@@ -74,8 +74,16 @@ export default function LoginPage() {
                   className="text-red-400 hover:text-red-600 transition-colors"
                   aria-label="Dismiss error"
                 >
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                  <svg
+                    className="w-4 h-4"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                 </button>
               </div>
@@ -142,14 +150,18 @@ export default function LoginPage() {
                   disabled={isFormLoading}
                   className="rounded border-grey-300 text-primary-green-600 focus:ring-primary-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
-                <span className={`text-grey-600 ${isFormLoading ? 'opacity-50' : ''}`}>
+                <span
+                  className={`text-grey-600 ${
+                    isFormLoading ? "opacity-50" : ""
+                  }`}
+                >
                   Remember me
                 </span>
               </label>
               <Link
                 href="/forgot-password"
                 className={`text-primary-green-600 hover:text-primary-green-700 font-medium transition-colors ${
-                  isFormLoading ? 'opacity-50 pointer-events-none' : ''
+                  isFormLoading ? "opacity-50 pointer-events-none" : ""
                 }`}
               >
                 Forgot password?
@@ -188,7 +200,7 @@ export default function LoginPage() {
               <Link
                 href="/signup"
                 className={`w-full text-center inline-block rounded-lg px-6 py-3 bg-slate-100 text-slate-900 hover:bg-slate-200 focus:ring-slate-500 focus:ring-2 focus:ring-offset-2 transition-colors ${
-                  isFormLoading ? 'opacity-50 pointer-events-none' : ''
+                  isFormLoading ? "opacity-50 pointer-events-none" : ""
                 }`}
               >
                 Create your account
@@ -202,7 +214,7 @@ export default function LoginPage() {
           <Link
             href="/terms"
             className={`text-primary-green-600 hover:text-primary-green-700 transition-colors ${
-              isFormLoading ? 'opacity-50 pointer-events-none' : ''
+              isFormLoading ? "opacity-50 pointer-events-none" : ""
             }`}
           >
             Terms of Service
@@ -211,7 +223,7 @@ export default function LoginPage() {
           <Link
             href="/privacy"
             className={`text-primary-green-600 hover:text-primary-green-700 transition-colors ${
-              isFormLoading ? 'opacity-50 pointer-events-none' : ''
+              isFormLoading ? "opacity-50 pointer-events-none" : ""
             }`}
           >
             Privacy Policy

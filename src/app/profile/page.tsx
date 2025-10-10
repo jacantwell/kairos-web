@@ -2,16 +2,16 @@
 
 import { AuthGuard } from "@/lib/components/auth";
 import { JourneyList } from "@/lib/components/journey/journey-list";
-import { CreateJourneyModal } from "@/lib/components/journey/create-journey-modal";
-import { ActiveJourneyModal } from "@/lib/components/journey/active-journey-modal";
+import { CreateJourneyModal } from "./components/create-journey-modal";
+import { ActiveJourneyModal } from "./components/active-journey-modal";
 import { Navigation } from "@/lib/components/navigation";
-import { useSession } from "@/lib/context/session";
+import { useSession } from "@/lib/context/session-provider";
 import { useJourneys } from "@/lib/api/hooks/use-journeys";
 import { useApi } from "@/lib/api/hooks/use-api";
 import { useState } from "react";
-import { Journey } from "kairos-api-client-ts";
 import Link from "next/link";
 import { Phone, MapPin } from "lucide-react";
+import { useModal } from "@/lib/hooks/ui/use-modal";
 
 export default function ProfilePage() {
   const { user } = useSession();
@@ -26,9 +26,9 @@ export default function ProfilePage() {
     error: journeysError,
   } = useJourneys();
 
+  const { openModal, modal } = useModal();
+
   const [error, setError] = useState<string | null>(null);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isActiveModalOpen, setIsActiveModalOpen] = useState(false);
   const api = useApi();
 
   const handleSetActiveJourney = async (journeyId: string) => {
@@ -60,7 +60,6 @@ export default function ProfilePage() {
       }
 
       console.log("Set active journey:", journeyId);
-      setIsActiveModalOpen(false);
     } catch (err) {
       console.error("Failed to set active journey:", err);
       setError("Failed to set active journey");
@@ -99,7 +98,6 @@ export default function ProfilePage() {
 
       if (response.data) {
         addJourney(response.data);
-        setIsCreateModalOpen(false);
       }
     } catch (err) {
       console.error("Failed to create journey:", err);
@@ -355,7 +353,11 @@ export default function ProfilePage() {
                   My Journeys
                 </h2>
                 <button
-                  onClick={() => setIsActiveModalOpen(true)}
+                  onClick={() =>
+                    openModal("activeJourney", {
+                      onConfirm: handleSetActiveJourney,
+                    })
+                  }
                   className="text-sm px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors"
                 >
                   Set Active
@@ -378,10 +380,15 @@ export default function ProfilePage() {
                 className="border-2 border-dashed border-gray-200 rounded-lg p-4 sm:p-6 hover:border-primary-green-300 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-green-500"
                 tabIndex={0}
                 role="button"
-                onClick={() => setIsCreateModalOpen(true)}
+                onClick={() =>
+                  openModal("createJourney", { onConfirm: handleCreateJourney })
+                }
                 onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ")
-                    setIsCreateModalOpen(true);
+                  if (e.key === "Enter" || e.key === " ") {
+                    openModal("createJourney", {
+                      onConfirm: handleCreateJourney,
+                    });
+                  }
                 }}
               >
                 <div className="text-center">
@@ -413,18 +420,13 @@ export default function ProfilePage() {
         </main>
 
         {/* Modals */}
-        {isCreateModalOpen && (
-          <CreateJourneyModal
-            onConfirm={handleCreateJourney}
-            onCancel={() => setIsCreateModalOpen(false)}
-          />
+
+        {modal.type === "createJourney" && (
+          <CreateJourneyModal onConfirm={modal.props.onConfirm} />
         )}
 
-        {isActiveModalOpen && (
-          <ActiveJourneyModal
-            onConfirm={handleSetActiveJourney}
-            onCancel={() => setIsActiveModalOpen(false)}
-          />
+        {modal.type === "activeJourney" && (
+          <ActiveJourneyModal onConfirm={modal.props.onConfirm} />
         )}
       </div>
     </AuthGuard>
