@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import Map, {
   NavigationControl,
   ViewState,
@@ -11,13 +11,14 @@ import { UserMarkerModal } from "./user-marker-modal";
 import { NearbyMarkerModal } from "./nearby-marker-modal";
 import { MapLayerMouseEvent, MapLayerTouchEvent } from "react-map-gl/maplibre";
 import { Marker as MarkerType } from "kairos-api-client-ts";
-import { User } from "kairos-api-client-ts";
 import { NearbyJourneyMarkers } from "@/lib/api/hooks/use-nearby-journey-markers";
-import { useSession } from "@/lib/context/session";
+import { useSession } from "@/lib/context/session-provider";
 import { Marker } from "kairos-api-client-ts";
 import { processJourneyRoutes, ProcessedMarker } from "./utils/journey-routes";
 import { JourneyRoutesLayer } from "./journey-routes-layer";
 import { EnhancedMarker } from "./journey-marker";
+import { useModal } from "@/lib/hooks/ui/use-modal";
+import { UpdateUserMarkerModal } from "./update-user-marker-modal";
 
 interface JourneyMapProps {
   journeyMarkers: MarkerType[];
@@ -45,11 +46,8 @@ export function JourneyMap({
     padding: { top: 40, bottom: 40, left: 40, right: 40 },
   });
 
+  const { closeModal, openModal, modal } = useModal();
   const [cursor, setCursor] = useState<string>("auto");
-  const [pendingPoint, setPendingPoint] = useState<{
-    lat: number;
-    lng: number;
-  } | null>(null);
 
   // Selected marker (use ProcessedMarker now)
   const [selectedPoint, setSelectedPoint] = useState<ProcessedMarker | null>(
@@ -58,28 +56,6 @@ export function JourneyMap({
 
   const { user } = useSession();
   const api = useApi();
-  const [ownerInfo, setOwnerInfo] = useState<User | null>(null);
-  const [ownerLoading, setOwnerLoading] = useState(false);
-
-  useEffect(() => {
-    if (selectedPoint && selectedPoint.owner_id) {
-      setOwnerLoading(true);
-      api.users
-        .getUserByIdApiV1UsersUserIdGet(selectedPoint.owner_id)
-        .then((response) => {
-          if (response.status === 200 && response.data) {
-            setOwnerInfo(response.data);
-          } else {
-            setOwnerInfo(null);
-          }
-        })
-        .catch(() => setOwnerInfo(null))
-        .finally(() => setOwnerLoading(false));
-    } else {
-      setOwnerInfo(null);
-      setOwnerLoading(false);
-    }
-  }, [selectedPoint?.owner_id, api.users]);
 
   const nearbyMarkers = nearbyJourneyMarkers.flatMap((njm) => njm.markers);
   const combinedMarkers = [
@@ -134,40 +110,59 @@ export function JourneyMap({
     (event: MapLayerMouseEvent | MapLayerTouchEvent) => {
       if (!isAddingPoint) return;
       const { lng, lat } = event.lngLat;
-      setPendingPoint({ lat, lng });
+      openModal("addPoint", { onConfirm: onAddPoint, coordinates: [lat, lng] });
     },
     [isAddingPoint]
   );
+
+  function handleMarkerClick(marker: ProcessedMarker) {
+    if (isUserOwnedMarker(marker)) {
+      openModal("userMarker", {
+        marker: marker,
+        onUpdate: handleUpdateMarker,
+        onDelete: handleDeleteMarker,
+      });
+    } else {
+      openModal("nearbyMarker", {
+        marker: marker,
+        ownerId: marker.owner_id,
+      });
+    }
+  }
 
   // Mouse cursor
   const handleMouseMove = useCallback(() => {
     setCursor(isAddingPoint ? "crosshair" : "auto");
   }, [isAddingPoint]);
 
-  // Button handler for fitting bounds
-  // const handleFitBounds = () => {
-  //   fitBounds();
-  // };
-
   // Check if marker is owned by current user
   const isUserOwnedMarker = (marker: Marker): boolean => {
-    console.log("Checking ownership for marker:", marker);
-    console.log("Current user:", user);
     if (!user?._id) return false;
     return marker.owner_id === user._id;
   };
 
   const handleDeleteMarker = (markerId: string) => {
     onDeletePoint(markerId);
-    setSelectedPoint(null);
+    closeModal();
   };
 
-  const handleUpdateMarker = (id: string, updatedMarker: MarkerType) => {
+  const handleUpdateMarkerSubmit = (id: string, updatedMarker: MarkerType) => {
     if (onUpdatePoint) {
       onUpdatePoint(id, updatedMarker);
       setSelectedPoint(null);
     }
-  }
+  };
+
+  const handleUpdateMarker = (id: string, updatedMarker: MarkerType) => {
+    // Function that runs when Update button is clicked.
+    // Closes current user marker modal.
+    closeModal();
+    // Opens the update user marker modal.
+    openModal("updateUserMarker", {
+      onConfirm: handleUpdateMarkerSubmit,
+      marker: { ...updatedMarker, _id: id } as ProcessedMarker,
+    });
+  };
 
   return (
     <>
@@ -233,40 +228,36 @@ export function JourneyMap({
                 marker={marker}
                 journeyColor={route.color}
                 isSelected={selectedPoint?._id === marker._id}
-                onMarkerClick={setSelectedPoint}
+                onMarkerClick={handleMarkerClick}
               />
             ))
           )}
         </Map>
       </div>
-
-      {/* Add Point Modal */}
-      {pendingPoint && (
+      {modal.type === "addPoint" && (
         <AddPointModal
-          coordinates={[pendingPoint.lng, pendingPoint.lat]}
-          onConfirm={onAddPoint}
-          onCancel={() => setPendingPoint(null)}
-        />
-      )} 
-
-      {/* Point Details Modal - User Owned */}
-      {selectedPoint && isUserOwnedMarker(selectedPoint) && (
-        <UserMarkerModal
-          marker={selectedPoint}
-          onClose={() => setSelectedPoint(null)}
-          onUpdate={handleUpdateMarker}
-          onDelete={handleDeleteMarker}
+          onConfirm={modal.props.onConfirm}
+          coordinates={modal.props.coordinates}
         />
       )}
 
-      {/* Point Details Modal - Nearby User */}
-      {selectedPoint && !isUserOwnedMarker(selectedPoint) && (
-        <NearbyMarkerModal
-          marker={selectedPoint}
-          onClose={() => setSelectedPoint(null)}
-          ownerInfo={ownerInfo}
-          loading={ownerLoading}
+      {modal.type === "updateUserMarker" && (
+        <UpdateUserMarkerModal
+          marker={modal.props.marker}
+          onConfirm={modal.props.onConfirm}
         />
+      )}
+
+      {modal.type === "userMarker" && (
+        <UserMarkerModal
+          marker={modal.props.marker}
+          onUpdate={modal.props.onUpdate}
+          onDelete={modal.props.onDelete}
+        />
+      )}
+
+      {modal.type === "nearbyMarker" && (
+        <NearbyMarkerModal marker={modal.props.marker} />
       )}
     </>
   );
