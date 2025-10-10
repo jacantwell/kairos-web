@@ -9,6 +9,8 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.90.2",
+    "@tanstack/react-query-devtools": "^5.90.2",
     "axios": "^1.11.0",
     "kairos-api-client-ts": "^0.6.2",
     "lucide-react": "^0.543.0",

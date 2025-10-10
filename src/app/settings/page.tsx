@@ -2,7 +2,7 @@
 
 import { AuthGuard } from "@/lib/components/auth";
 import { Navigation } from "@/lib/components/navigation";
-import { useSession } from "@/lib/context/session";
+import { useSession } from "@/lib/context/session-provider";
 import { useApi } from "@/lib/api/hooks/use-api";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -38,16 +38,13 @@ export default function SettingsPage() {
     setSuccessMessage(null);
 
     try {
-      const response = await api.users.updateUserApiV1UsersUserIdPut(
-        user._id,
-        {
-          ...user,
-          name: userDetails.name,
-          instagram: userDetails.instagram,
-          phonenumber: userDetails.phonenumber,
-          country: userDetails.country,
-        }
-      );
+      const response = await api.users.updateUserApiV1UsersUserIdPut(user._id, {
+        ...user,
+        name: userDetails.name,
+        instagram: userDetails.instagram,
+        phonenumber: userDetails.phonenumber,
+        country: userDetails.country,
+      });
 
       if (response.status === 200) {
         setSuccessMessage("Settings saved successfully!");
@@ -205,7 +202,10 @@ export default function SettingsPage() {
                   required
                   value={userDetails.name}
                   onChange={(e) =>
-                    setUserDetails((prev) => ({ ...prev, name: e.target.value }))
+                    setUserDetails((prev) => ({
+                      ...prev,
+                      name: e.target.value,
+                    }))
                   }
                   className="w-full px-4 py-3 border border-gray-300 placeholder-gray-400 text-gray-900 rounded-lg focus:outline-none focus:ring-primary-green-500 focus:border-primary-green-500 sm:text-sm"
                   placeholder="Enter your display name"
@@ -391,7 +391,9 @@ export default function SettingsPage() {
           {/* Danger Zone */}
           <div className="bg-white rounded-lg shadow border-2 border-red-200">
             <div className="px-4 sm:px-6 py-4 border-b border-red-200 bg-red-50">
-              <h2 className="text-lg font-semibold text-red-900">Danger Zone</h2>
+              <h2 className="text-lg font-semibold text-red-900">
+                Danger Zone
+              </h2>
             </div>
 
             <div className="p-4 sm:p-6">
@@ -442,9 +444,9 @@ export default function SettingsPage() {
               </div>
 
               <p className="text-gray-600 mb-6">
-                Are you sure you want to delete your account? This action cannot be
-                undone. All your journeys, markers, and data will be permanently
-                deleted.
+                Are you sure you want to delete your account? This action cannot
+                be undone. All your journeys, markers, and data will be
+                permanently deleted.
               </p>
 
               <div className="flex gap-3">
@@ -503,8 +505,8 @@ export default function SettingsPage() {
               </div>
 
               <p className="text-gray-600 mb-6">
-                To change your password, we'll send you a reset link to your email
-                address: <strong>{user?.email}</strong>
+                To change your password, we&#39;ll send you a reset link to your
+                email address: <strong>{user?.email}</strong>
               </p>
 
               <div className="flex gap-3">

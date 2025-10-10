@@ -8,11 +8,7 @@ import React, {
   ReactNode,
 } from "react";
 import { getApiClient } from "../api/client";
-import {
-  getAccessToken,
-  setAuthTokens,
-  clearAuthTokens,
-} from "../api/auth";
+import { getAccessToken, setAuthTokens, clearAuthTokens } from "../api/auth";
 import { User, Tokens } from "kairos-api-client-ts";
 
 export interface SessionState {
@@ -114,7 +110,7 @@ export const SessionProvider: React.FC<SessionProviderProps> = ({
         credentials.password,
         "password"
       );
-      
+
       const { access_token, refresh_token } = authResponse.data as Tokens;
 
       if (!access_token || !refresh_token) {
@@ -139,8 +135,7 @@ export const SessionProvider: React.FC<SessionProviderProps> = ({
       return true;
     } catch (error) {
       console.error("Login failed:", error);
-      const errorMessage =
-        "Login failed";
+      const errorMessage = "Login failed";
       setState((prev) => ({
         ...prev,
         isLoading: false,

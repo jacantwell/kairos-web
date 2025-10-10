@@ -56,7 +56,7 @@ export function ActiveJourneyCard({
         onClick={() => onSelect(journey)}
         className={`w-full text-left p-4 rounded-lg border transition-colors ${
           selected
-            ? "border-primary-green-500 bg-primary-green-50"
+            ? "border-primary-green-500"
             : "border-gray-200 hover:border-primary-green-300"
         }`}
       >

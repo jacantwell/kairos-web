@@ -1,22 +1,20 @@
 import { ProcessedMarker } from "./utils/journey-routes";
-import { useState } from "react";
-import { UpdateUserMarkerModal } from "./update-user-marker-modal";
 import { Marker } from "kairos-api-client-ts";
+import { Modal } from "@/lib/components/ui/modal";
+import { useModal } from "@/lib/hooks/ui/use-modal";
+
 interface UserMarkerModalProps {
   marker: ProcessedMarker;
-  onClose: () => void;
   onUpdate: (id: string, updatedMarker: Marker) => void;
   onDelete: (markerId: string) => void;
 }
 
 export function UserMarkerModal({
   marker,
-  onClose,
   onUpdate,
   onDelete,
 }: UserMarkerModalProps) {
-  const [isUpdating, setIsUpdating] = useState(false);
-
+  const { closeModal } = useModal();
   const handleDelete = () => {
     if (marker._id) {
       onDelete(marker._id);
@@ -24,31 +22,13 @@ export function UserMarkerModal({
   };
 
   const handleUpdate = () => {
-    if (marker._id) {
-      setIsUpdating(true);
-    }
+    onUpdate(marker._id!, marker);
   };
 
-  return isUpdating ? (
-    <UpdateUserMarkerModal
-      marker={marker}
-      onCancel={() => setIsUpdating(false)}
-      onConfirm={(id, updatedMarker) => {
-        if (marker._id) {
-          onUpdate(marker._id, updatedMarker);
-        }
-        setIsUpdating(false);
-        onClose();
-      }}
-    />
-  ) : (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
-        <div className="flex justify-between items-start mb-4">
-          <h3 className="text-lg font-semibold">{marker.name}</h3>
-          <button onClick={onClose}>✕</button>
-        </div>
-
+  return (
+    <Modal isOpen={true}>
+      <Modal.Header onClose={closeModal}>{marker.name}</Modal.Header>
+      <Modal.Body>
         <div className="space-y-3">
           <p className="capitalize">Type: {marker.marker_type}</p>
           {marker.notes && <p>{marker.notes}</p>}
@@ -60,7 +40,7 @@ export function UserMarkerModal({
           </p>
         </div>
 
-        <div className="mt-6 flex gap-3">
+        <Modal.Footer>
           <button
             onClick={handleUpdate}
             className="flex-1 px-4 py-2 bg-gray-200 rounded-lg"
@@ -73,8 +53,8 @@ export function UserMarkerModal({
           >
             Delete
           </button>
-        </div>
-      </div>
-    </div>
+        </Modal.Footer>
+      </Modal.Body>
+    </Modal>
   );
 }

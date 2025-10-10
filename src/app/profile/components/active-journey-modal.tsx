@@ -1,0 +1,82 @@
+"use client";
+import { Modal } from "@/lib/components/ui/modal";
+import { useModal } from "@/lib/hooks/ui/use-modal";
+import { useState } from "react";
+import { useJourneys } from "@/lib/api/hooks/use-journeys";
+import { Journey } from "kairos-api-client-ts";
+import { ActiveJourneyCard } from "./active-journey-card";
+
+interface ActiveJourneyModalProps {
+  onConfirm: (journeyId: string) => Promise<void>;
+}
+
+export function ActiveJourneyModal({ onConfirm }: ActiveJourneyModalProps) {
+  const { closeModal } = useModal();
+  const [selected, setSelected] = useState<Journey | null>(null);
+
+  const { journeys } = useJourneys();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selected?._id) return;
+
+    try {
+      await onConfirm(selected._id);
+      closeModal(); // ✅ close after success
+    } catch (err) {
+      console.error("Failed to set active journey:", err);
+    }
+  };
+
+  return (
+    <Modal isOpen={true} onClose={closeModal}>
+      <Modal.Header onClose={closeModal}>Set Active Journey</Modal.Header>
+
+      <Modal.Body>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label
+              htmlFor="journeyId"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Journey ID
+            </label>
+            {journeys.length > 0 ? (
+              <div className="grid gap-4">
+                {journeys.map((journey) => (
+                  <ActiveJourneyCard
+                    key={journey._id}
+                    journey={journey}
+                    selected={selected?._id === journey._id}
+                    onSelect={setSelected}
+                  />
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500 text-center py-8">
+                No journeys found.
+              </p>
+            )}
+          </div>
+        </form>
+      </Modal.Body>
+
+      <Modal.Footer>
+        <button
+          type="button"
+          onClick={closeModal}
+          className="flex-1 px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          onClick={handleSubmit}
+          className="flex-1 px-4 py-2 bg-primary-green-500 text-white rounded-lg hover:bg-primary-green-600"
+        >
+          Confirm
+        </button>
+      </Modal.Footer>
+    </Modal>
+  );
+}
