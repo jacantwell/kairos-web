@@ -505,7 +505,7 @@ export default function SettingsPage() {
               </div>
 
               <p className="text-gray-600 mb-6">
-                To change your password, we'll send you a reset link to your
+                To change your password, we&#39;ll send you a reset link to your
                 email address: <strong>{user?.email}</strong>
               </p>
 

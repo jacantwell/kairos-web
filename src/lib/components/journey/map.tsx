@@ -5,7 +5,6 @@ import Map, {
   ViewStateChangeEvent,
 } from "react-map-gl/mapbox";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { useApi } from "@/lib/api/hooks/use-api";
 import { AddPointModal } from "./add-point-modal";
 import { UserMarkerModal } from "./user-marker-modal";
 import { NearbyMarkerModal } from "./nearby-marker-modal";
@@ -55,7 +54,6 @@ export function JourneyMap({
   );
 
   const { user } = useSession();
-  const api = useApi();
 
   const nearbyMarkers = nearbyJourneyMarkers.flatMap((njm) => njm.markers);
   const combinedMarkers = [
@@ -112,7 +110,7 @@ export function JourneyMap({
       const { lng, lat } = event.lngLat;
       openModal("addPoint", { onConfirm: onAddPoint, coordinates: [lat, lng] });
     },
-    [isAddingPoint]
+    [isAddingPoint, onAddPoint, openModal]
   );
 
   function handleMarkerClick(marker: ProcessedMarker) {

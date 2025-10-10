@@ -1,5 +1,5 @@
 import { Marker } from 'react-map-gl/mapbox';
-import { ProcessedMarker, getMarkerStyle } from './utils/journey-routes';
+import { ProcessedMarker } from './utils/journey-routes';
 
 interface EnhancedMarkerProps {
   marker: ProcessedMarker;

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Journey } from "kairos-api-client-ts";
 import { useApi } from "@/lib/api/hooks/use-api";
-import { useSession } from "@/lib/context/session";
+import { useSession } from "@/lib/context/session-provider";
 
 export function useUserJourneys() {
   const [journeys, setJourneys] = useState<Journey[]>([]);
