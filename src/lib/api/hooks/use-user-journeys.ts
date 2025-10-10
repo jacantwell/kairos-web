@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Journey } from "kairos-api-client-ts";
 import { useApi } from "@/lib/api/hooks/use-api";
-import { useSession } from "@/lib/context/session";
+import { useSession } from "@/lib/context/session-provider";
 
 export function useUserJourneys() {
   const [journeys, setJourneys] = useState<Journey[]>([]);
@@ -23,9 +23,10 @@ export function useUserJourneys() {
       setIsLoading(true);
       setError(null);
       console.log("Loading journeys for user:", user._id);
-      
-      const response = await api.users.getUserJourneysApiV1UsersUserIdJourneysGet(user._id);
-      
+
+      const response =
+        await api.users.getUserJourneysApiV1UsersUserIdJourneysGet(user._id);
+
       if (response.status === 200 && response.data) {
         const fetchedJourneys = response.data;
         setJourneys(fetchedJourneys);
