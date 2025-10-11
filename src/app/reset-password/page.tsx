@@ -7,7 +7,12 @@ import { Logo } from "@/lib/components/ui/logo";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { LoadingScreen } from "@/lib/components/ui/loading";
-
+import {
+  FormField,
+  FormInput,
+  FormLabel,
+  FormError,
+} from "@/lib/components/ui/form";
 function ForgotPassword() {
   const api = useApi();
   const searchParams = useSearchParams();
@@ -16,19 +21,32 @@ function ForgotPassword() {
     password: "",
     confirmed_password: "",
   });
-  // const [passwordError, setPasswordError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [isReset, setIsReset] = useState(false);
-  // const [error, setError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // TODO Implement this 
-    // if (formDetails.password !== formDetails.confirmed_password) {
-    //   setPasswordError("Passwords do not match");
-    //   return;
-    // }
+    // Prevent double submission
+    if (isSubmitting) return;
+
+    // Clear previous errors
+    const newErrors: Record<string, string> = {};
+
+    // Validate the passwords match
+    if (formDetails.password !== formDetails.confirmed_password) {
+      newErrors.confirmed_password = "Passwords do not match";
+    }
+
+    // If there are errors, set them and stop
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    setErrors({});
+    setIsSubmitting(true);
 
     try {
       const response =
@@ -38,18 +56,44 @@ function ForgotPassword() {
         );
       if (response.status === 200) {
         setIsReset(true);
-        setIsLoading(false);
         return;
+      } else {
+        setErrors({
+          password: "Failed to reset password. Please try again.",
+        });
       }
-    } catch (error) {
-      console.log(error);
-      setIsLoading(false);
-      return;
+    } catch (err) {
+      setErrors({
+        password: "Failed to reset password. Please try again.",
+      });
     } finally {
-      setIsLoading(false);
-      setIsReset(true);
+      setIsSubmitting(false);
     }
   };
+
+  const handleChange =
+    (field: keyof typeof formDetails) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setFormDetails((prev) => ({ ...prev, [field]: e.target.value }));
+
+      // Clear error for this field when user starts typing
+      if (errors[field]) {
+        setErrors((prev) => {
+          const newErrors = { ...prev };
+          delete newErrors[field];
+          return newErrors;
+        });
+      }
+
+      // Clear form-level error when user starts typing
+      if (errors.form) {
+        setErrors((prev) => {
+          const newErrors = { ...prev };
+          delete newErrors.form;
+          return newErrors;
+        });
+      }
+    };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-grey-50">
@@ -85,47 +129,42 @@ function ForgotPassword() {
               </p>
             </div>
             <div className="space-y-4">
-              <div>
-                <input
+              <FormField>
+                <FormLabel htmlFor="password">New Password</FormLabel>
+                <FormInput
+                  id="password"
                   type="password"
-                  required
                   value={formDetails.password}
-                  onChange={(e) =>
-                    setFormDetails((prev) => ({
-                      ...prev,
-                      password: e.target.value,
-                    }))
-                  }
-                  className="w-full px-4 py-3 border border-grey-300 placeholder-grey-400 text-grey-900 rounded-lg focus:outline-none focus:ring-primary-green-500 focus:border-primary-green-500 sm:text-sm"
+                  onChange={handleChange("password")}
                   placeholder="New Password"
+                  error={!!errors.password}
                 />
-              </div>
+              </FormField>
             </div>
             <div className="space-y-4">
-              <div>
-                <input
+              <FormField>
+                <FormLabel htmlFor="password">Confirm Password</FormLabel>
+                <FormInput
+                  id="password"
                   type="password"
-                  required
                   value={formDetails.confirmed_password}
-                  onChange={(e) =>
-                    setFormDetails((prev) => ({
-                      ...prev,
-                      confirmed_password: e.target.value,
-                    }))
-                  }
-                  className="w-full px-4 py-3 border border-grey-300 placeholder-grey-400 text-grey-900 rounded-lg focus:outline-none focus:ring-primary-green-500 focus:border-primary-green-500 sm:text-sm"
+                  onChange={handleChange("confirmed_password")}
                   placeholder="Confirm New Password"
+                  error={!!errors.confirmed_password}
                 />
-              </div>
+              </FormField>
+              {errors.confirmed_password && (
+                <FormError>{errors.confirmed_password}</FormError>
+              )}
             </div>
 
             <div>
               <button
                 type="submit"
-                disabled={isLoading}
+                disabled={isSubmitting}
                 className="w-full rounded-lg px-6 py-3 bg-primary-green-500 text-white hover:bg-primary-green-600 focus:ring-primary-green-500 focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                {isLoading ? "Changing password..." : "Submit"}
+                {isSubmitting ? "Changing password..." : "Submit"}
               </button>
             </div>
           </form>
@@ -134,7 +173,6 @@ function ForgotPassword() {
     </div>
   );
 }
-
 
 export default function ForgotPasswordPage() {
   return (

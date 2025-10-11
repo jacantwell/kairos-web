@@ -10,16 +10,23 @@ import Map, {
   ViewState,
   ViewStateChangeEvent,
 } from "react-map-gl/mapbox";
+import { Modal } from "@/lib/components/ui/modal";
+import { useModal } from "@/lib/hooks/ui/use-modal";
+import {
+  FormInput,
+  FormLabel,
+  FormTextarea,
+  FormSelect,
+  FormField,
+} from "@/lib/components/ui/form";
 
 interface UpdateUserMarkerModalProps {
   marker: ProcessedMarker;
-  onCancel: () => void;
   onConfirm: (id: string, updatedMarker: Marker) => void;
 }
 
 export function UpdateUserMarkerModal({
   marker,
-  onCancel,
   onConfirm,
 }: UpdateUserMarkerModalProps) {
   const [formData, setFormData] = useState({
@@ -29,6 +36,7 @@ export function UpdateUserMarkerModal({
     timestamp: marker.timestamp?.trim() || marker.estimated_time?.trim() || "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { closeModal } = useModal();
 
   const [cursor, setCursor] = useState<string>("auto");
   const [newPosition, setNewPosition] = useState<{
@@ -71,7 +79,7 @@ export function UpdateUserMarkerModal({
       };
 
       onConfirm(marker._id || "", updatedMarker);
-      onCancel();
+      closeModal();
     } catch (error) {
       console.error("Error updating point:", error);
     } finally {
@@ -112,146 +120,138 @@ export function UpdateUserMarkerModal({
   ];
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 relative">
-        {/* --- Position Picker Overlay --- */}
-        {isPickingPosition && (
-          <div className="absolute inset-0 z-50 flex flex-col">
-            {/* Banner */}
-            <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10">
-              <div className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg">
-                <div className="flex items-center gap-2">
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                    />
-                  </svg>
-                  Select new position
-                </div>
+    <Modal isOpen={true}>
+      {/* --- Position Picker Overlay --- */}
+      {isPickingPosition && (
+        <div className="absolute inset-0 z-50 flex flex-col">
+          {/* Banner */}
+          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10">
+            <div className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg">
+              <div className="flex items-center gap-2">
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                  />
+                </svg>
+                Select new position
               </div>
             </div>
+          </div>
 
-            {/* Map takes full space */}
-            <div className="flex-1">
-              <Map
-                {...currentViewState}
-                onMove={(evt: ViewStateChangeEvent) =>
-                  setCurrentViewState(evt.viewState)
-                }
-                mapStyle="mapbox://styles/mapbox/outdoors-v12"
-                mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
-                style={{ width: "100%", height: "100%" }}
-                onClick={handleMapClick}
-                onMouseMove={handleMouseMove}
-                cursor={cursor}
-              >
-                {newPosition && (
-                  <MapMarker
-                    longitude={newPosition.lng}
-                    latitude={newPosition.lat}
-                    anchor="center"
-                  >
-                    <div className="relative">
-                      {/* Pin body */}
-                      <div
-                        className={`
+          {/* Map takes full space */}
+          <div className="flex-1">
+            <Map
+              {...currentViewState}
+              onMove={(evt: ViewStateChangeEvent) =>
+                setCurrentViewState(evt.viewState)
+              }
+              mapStyle="mapbox://styles/mapbox/outdoors-v12"
+              mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
+              style={{ width: "100%", height: "100%" }}
+              onClick={handleMapClick}
+              onMouseMove={handleMouseMove}
+              cursor={cursor}
+            >
+              {newPosition && (
+                <MapMarker
+                  longitude={newPosition.lng}
+                  latitude={newPosition.lat}
+                  anchor="center"
+                >
+                  <div className="relative">
+                    {/* Pin body */}
+                    <div
+                      className={`
               flex items-center justify-center text-white font-bold text-xs
               transition-all duration-200`}
+                      style={{
+                        width: "20px",
+                        height: "20px",
+                        backgroundColor: "white",
+                        border: "3px solid green",
+                        borderRadius: "50% 50% 50% 0",
+                        transform: "rotate(-45deg)",
+                        boxShadow: "0 3px 6px rgba(0,0,0,0.3)",
+                      }}
+                    >
+                      {/* Inner content */}
+                      <div
                         style={{
-                          width: "20px",
-                          height: "20px",
-                          backgroundColor: "white",
-                          border: "3px solid green",
-                          borderRadius: "50% 50% 50% 0",
-                          transform: "rotate(-45deg)",
-                          boxShadow: "0 3px 6px rgba(0,0,0,0.3)"
+                          transform: "rotate(45deg)",
+                          color: "green",
+                          fontSize: "12px",
                         }}
                       >
-                        {/* Inner content */}
-                        <div
-                          style={{
-                            transform: "rotate(45deg)",
-                            color: "green",
-                            fontSize: "12px",
-                          }}
-                        >
-                          {marker.marker_type === "past"
-                            ? "●"
-                            : marker.segmentType === "transition"
-                            ? "→"
-                            : "○"}
-                        </div>
+                        {marker.marker_type === "past"
+                          ? "●"
+                          : marker.segmentType === "transition"
+                          ? "→"
+                          : "○"}
                       </div>
-                    </div>{" "}
-                  </MapMarker>
-                )}
-                <NavigationControl position="top-right" />
-              </Map>
-            </div>
-
-            {/* Confirm / Cancel buttons */}
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10 flex gap-3">
-              <button
-                onClick={() => setIsPickingPosition(false)}
-                className="px-4 py-2 bg-gray-200 rounded-lg shadow"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => setIsPickingPosition(false)}
-                className="px-4 py-2 bg-primary-green-500 text-white rounded-lg shadow"
-              >
-                Confirm
-              </button>
-            </div>
+                    </div>
+                  </div>{" "}
+                </MapMarker>
+              )}
+              <NavigationControl position="top-right" />
+            </Map>
           </div>
-        )}
 
-        {/* --- Modal Content --- */}
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-semibold">Update Journey Point</h3>
-          <button
-            onClick={onCancel}
-            className="text-gray-400 hover:text-gray-600"
-            disabled={isSubmitting}
-          >
-            ✕
-          </button>
+          {/* Confirm / Cancel buttons */}
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10 flex gap-3">
+            <button
+              onClick={() => setIsPickingPosition(false)}
+              className="px-4 py-2 bg-gray-200 rounded-lg shadow"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => setIsPickingPosition(false)}
+              className="px-4 py-2 bg-primary-green-500 text-white rounded-lg shadow"
+            >
+              Confirm
+            </button>
+          </div>
         </div>
+      )}
 
+      {/* --- Modal Content --- */}
+      <Modal.Header onClose={closeModal}>Update Journey Point</Modal.Header>
+      <Modal.Body>
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Name */}
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Point Name *
-            </label>
-            <input
+          <FormField>
+            <FormLabel htmlFor="name" required>
+              Point Name
+            </FormLabel>
+            <FormInput
+              id="name"
               type="text"
               name="name"
               value={formData.name}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border rounded-lg"
+              placeholder="Enter a name for this point"
               disabled={isSubmitting}
-              required
             />
-          </div>
+          </FormField>
 
           {/* Type */}
-          <div>
-            <label className="block text-sm font-medium mb-2">Point Type</label>
-            <select
+          <FormField>
+            <FormLabel htmlFor="marker_type" required>
+              Point Type
+            </FormLabel>
+            <FormSelect
+              id="marker_type"
               name="marker_type"
               value={formData.marker_type}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border rounded-lg"
               disabled={isSubmitting}
             >
               {pointTypeOptions.map((opt) => (
@@ -259,49 +259,53 @@ export function UpdateUserMarkerModal({
                   {opt.label}
                 </option>
               ))}
-            </select>
-          </div>
+            </FormSelect>
+          </FormField>
 
           {/* Time fields */}
           {formData.marker_type === "plan" && (
-            <div>
-              <label className="block text-sm font-medium mb-2">ETA</label>
-              <input
-                type="date"
+            <FormField>
+              <FormLabel htmlFor="estimated_time" required>
+                Estimated Arrival
+              </FormLabel>
+              <FormInput
+                id="estimated_time"
+                type="Date"
                 name="estimated_time"
                 value={formData.estimated_time || ""}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border rounded-lg"
                 disabled={isSubmitting}
               />
-            </div>
+            </FormField>
           )}
           {formData.marker_type === "past" && (
-            <div>
-              <label className="block text-sm font-medium mb-2">Date</label>
-              <input
-                type="date"
+            <FormField>
+              <FormLabel htmlFor="timestamp" required>
+                Date
+              </FormLabel>
+              <FormInput
+                id="timestamp"
+                type="Date"
                 name="timestamp"
                 value={formData.timestamp || ""}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border rounded-lg"
                 disabled={isSubmitting}
               />
-            </div>
+            </FormField>
           )}
 
           {/* Notes */}
-          <div>
-            <label className="block text-sm font-medium mb-2">Notes</label>
-            <textarea
+          <FormField>
+            <FormLabel htmlFor="notes">Notes</FormLabel>
+            <FormTextarea
+              id="notes"
               name="notes"
               value={formData.notes || ""}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border rounded-lg"
-              rows={3}
+              placeholder="Optional notes"
               disabled={isSubmitting}
             />
-          </div>
+          </FormField>
 
           {/* Location */}
           <div className="bg-gray-50 p-3 rounded-lg">
@@ -326,10 +330,10 @@ export function UpdateUserMarkerModal({
           </div>
 
           {/* Actions */}
-          <div className="flex gap-3 pt-4">
+          <Modal.Footer>
             <button
               type="button"
-              onClick={onCancel}
+              onClick={closeModal}
               className="flex-1 px-4 py-2 bg-gray-200 rounded-lg"
               disabled={isSubmitting}
             >
@@ -342,9 +346,9 @@ export function UpdateUserMarkerModal({
             >
               {isSubmitting ? "Updating..." : "Update Point"}
             </button>
-          </div>
+          </Modal.Footer>
         </form>
-      </div>
-    </div>
+      </Modal.Body>
+    </Modal>
   );
 }

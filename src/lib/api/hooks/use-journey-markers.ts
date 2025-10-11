@@ -107,7 +107,7 @@ export function useJourneyMarkers(journeyId: string | null) {
       );
       return loadMarkers();
     },
-    [journeyId, loadMarkers]
+    [api.journeys, journeyId, loadMarkers]
   );
 
   return {
