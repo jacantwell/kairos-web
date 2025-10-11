@@ -6,7 +6,7 @@ import { useState } from "react";
 import { useJourneys } from "@/lib/api/hooks/use-journeys";
 import { Journey } from "kairos-api-client-ts";
 import { ActiveJourneyCard } from "./active-journey-card";
-import { FormField, FormLabel, FormSelect } from "@/lib/components/ui/form";
+import { FormField } from "@/lib/components/ui/form";
 
 interface ActiveJourneyModalProps {
   onConfirm: (journeyId: string) => Promise<void>;
@@ -15,6 +15,7 @@ interface ActiveJourneyModalProps {
 export function ActiveJourneyModal({ onConfirm }: ActiveJourneyModalProps) {
   const { closeModal } = useModal();
   const [selected, setSelected] = useState<Journey | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const { journeys } = useJourneys();
 
@@ -23,10 +24,13 @@ export function ActiveJourneyModal({ onConfirm }: ActiveJourneyModalProps) {
     if (!selected?._id) return;
 
     try {
+      setSubmitting(true);
       await onConfirm(selected._id);
       closeModal();
     } catch (err) {
       console.error("Failed to set active journey:", err);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -37,25 +41,22 @@ export function ActiveJourneyModal({ onConfirm }: ActiveJourneyModalProps) {
       <Modal.Body>
         <form onSubmit={handleSubmit} className="space-y-4">
           <FormField>
-            <FormLabel htmlFor="email">Email address</FormLabel>
-            <FormSelect>
-              {journeys.length > 0 ? (
-                <div className="grid gap-4">
-                  {journeys.map((journey) => (
-                    <ActiveJourneyCard
-                      key={journey._id}
-                      journey={journey}
-                      selected={selected?._id === journey._id}
-                      onSelect={setSelected}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <p className="text-gray-500 text-center py-8">
-                  No journeys found.
-                </p>
-              )}
-            </FormSelect>
+            {journeys.length > 0 ? (
+              <div className="grid gap-4">
+                {journeys.map((journey) => (
+                  <ActiveJourneyCard
+                    key={journey._id}
+                    journey={journey}
+                    selected={selected?._id === journey._id}
+                    onSelect={setSelected}
+                  />
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500 text-center py-8">
+                No journeys found.
+              </p>
+            )}
           </FormField>
         </form>
       </Modal.Body>
@@ -70,8 +71,9 @@ export function ActiveJourneyModal({ onConfirm }: ActiveJourneyModalProps) {
         </button>
         <button
           type="submit"
+          disabled={!selected || submitting}
           onClick={handleSubmit}
-          className="flex-1 px-4 py-2 bg-primary-green-500 text-white rounded-lg hover:bg-primary-green-600"
+          className="flex-1 px-4 py-2 bg-primary-green-500 text-white rounded-lg hover:bg-primary-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Confirm
         </button>
