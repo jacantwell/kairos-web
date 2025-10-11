@@ -23,9 +23,10 @@ export function useUserJourneys() {
       setIsLoading(true);
       setError(null);
       console.log("Loading journeys for user:", user._id);
-      
-      const response = await api.users.getUserJourneysApiV1UsersUserIdJourneysGet(user._id);
-      
+
+      const response =
+        await api.users.getUserJourneysApiV1UsersUserIdJourneysGet(user._id);
+
       if (response.status === 200 && response.data) {
         const fetchedJourneys = response.data;
         setJourneys(fetchedJourneys);
