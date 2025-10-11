@@ -12,6 +12,13 @@ import Map, {
 } from "react-map-gl/mapbox";
 import { Modal } from "@/lib/components/ui/modal";
 import { useModal } from "@/lib/hooks/ui/use-modal";
+import {
+  FormInput,
+  FormLabel,
+  FormTextarea,
+  FormSelect,
+  FormField,
+} from "@/lib/components/ui/form";
 
 interface UpdateUserMarkerModalProps {
   marker: ProcessedMarker;
@@ -220,29 +227,31 @@ export function UpdateUserMarkerModal({
       <Modal.Body>
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Name */}
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Point Name *
-            </label>
-            <input
+          <FormField>
+            <FormLabel htmlFor="name" required>
+              Point Name
+            </FormLabel>
+            <FormInput
+              id="name"
               type="text"
               name="name"
               value={formData.name}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border rounded-lg"
+              placeholder="Enter a name for this point"
               disabled={isSubmitting}
-              required
             />
-          </div>
+          </FormField>
 
           {/* Type */}
-          <div>
-            <label className="block text-sm font-medium mb-2">Point Type</label>
-            <select
+          <FormField>
+            <FormLabel htmlFor="marker_type" required>
+              Point Type
+            </FormLabel>
+            <FormSelect
+              id="marker_type"
               name="marker_type"
               value={formData.marker_type}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border rounded-lg"
               disabled={isSubmitting}
             >
               {pointTypeOptions.map((opt) => (
@@ -250,49 +259,53 @@ export function UpdateUserMarkerModal({
                   {opt.label}
                 </option>
               ))}
-            </select>
-          </div>
+            </FormSelect>
+          </FormField>
 
           {/* Time fields */}
           {formData.marker_type === "plan" && (
-            <div>
-              <label className="block text-sm font-medium mb-2">ETA</label>
-              <input
-                type="date"
+            <FormField>
+              <FormLabel htmlFor="estimated_time" required>
+                Estimated Arrival
+              </FormLabel>
+              <FormInput
+                id="estimated_time"
+                type="Date"
                 name="estimated_time"
                 value={formData.estimated_time || ""}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border rounded-lg"
                 disabled={isSubmitting}
               />
-            </div>
+            </FormField>
           )}
           {formData.marker_type === "past" && (
-            <div>
-              <label className="block text-sm font-medium mb-2">Date</label>
-              <input
-                type="date"
+            <FormField>
+              <FormLabel htmlFor="timestamp" required>
+                Date
+              </FormLabel>
+              <FormInput
+                id="timestamp"
+                type="Date"
                 name="timestamp"
                 value={formData.timestamp || ""}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border rounded-lg"
                 disabled={isSubmitting}
               />
-            </div>
+            </FormField>
           )}
 
           {/* Notes */}
-          <div>
-            <label className="block text-sm font-medium mb-2">Notes</label>
-            <textarea
+          <FormField>
+            <FormLabel htmlFor="notes">Notes</FormLabel>
+            <FormTextarea
+              id="notes"
               name="notes"
               value={formData.notes || ""}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border rounded-lg"
-              rows={3}
+              placeholder="Optional notes"
               disabled={isSubmitting}
             />
-          </div>
+          </FormField>
 
           {/* Location */}
           <div className="bg-gray-50 p-3 rounded-lg">

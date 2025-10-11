@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { LoadingSpinner } from "@/lib/components/ui/loading";
 import Link from "next/link";
 import { ArrowLeft, Save, Trash2, Key, LogOut } from "lucide-react";
+import { FormField, FormInput, FormLabel } from "@/lib/components/ui/form";
 
 export default function SettingsPage() {
   const { user, logout, refreshUser } = useSession();
@@ -25,6 +26,7 @@ export default function SettingsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -58,6 +60,21 @@ export default function SettingsPage() {
       setIsSaving(false);
     }
   };
+
+  const handleChange =
+    (field: keyof typeof userDetails) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setUserDetails((prev) => ({ ...prev, [field]: e.target.value }));
+
+      // Clear error for this field when user starts typing
+      if (errors[field]) {
+        setErrors((prev) => {
+          const newErrors = { ...prev };
+          delete newErrors[field];
+          return newErrors;
+        });
+      }
+    };
 
   const handleDeleteAccount = async () => {
     if (!user?._id) return;
@@ -189,118 +206,64 @@ export default function SettingsPage() {
             </div>
 
             <form onSubmit={handleSaveChanges} className="p-4 sm:p-6 space-y-4">
-              <div>
-                <label
-                  htmlFor="name"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Display Name *
-                </label>
-                <input
+              <FormField>
+                <FormLabel htmlFor="name" required>
+                  Display Name
+                </FormLabel>
+                <FormInput
                   id="name"
                   type="text"
-                  required
                   value={userDetails.name}
-                  onChange={(e) =>
-                    setUserDetails((prev) => ({
-                      ...prev,
-                      name: e.target.value,
-                    }))
-                  }
-                  className="w-full px-4 py-3 border border-gray-300 placeholder-gray-400 text-gray-900 rounded-lg focus:outline-none focus:ring-primary-green-500 focus:border-primary-green-500 sm:text-sm"
-                  placeholder="Enter your display name"
+                  onChange={handleChange("name")}
+                  placeholder="Display Name"
+                  disabled={isLoading}
+                  error={!!errors.name}
                 />
-              </div>
+              </FormField>
 
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Email Address
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  disabled
-                  value={user?.email || ""}
-                  className="w-full px-4 py-3 border border-gray-300 bg-gray-50 text-gray-500 rounded-lg cursor-not-allowed sm:text-sm"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Email cannot be changed
-                </p>
-              </div>
-
-              <div>
-                <label
-                  htmlFor="instagram"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Instagram Handle
-                </label>
-                <input
-                  id="instagram"
-                  type="text"
-                  value={userDetails.instagram}
-                  onChange={(e) =>
-                    setUserDetails((prev) => ({
-                      ...prev,
-                      instagram: e.target.value,
-                    }))
-                  }
-                  className="w-full px-4 py-3 border border-gray-300 placeholder-gray-400 text-gray-900 rounded-lg focus:outline-none focus:ring-primary-green-500 focus:border-primary-green-500 sm:text-sm"
-                  placeholder="@yourusername"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="phonenumber"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Phone Number
-                </label>
-                <input
+              {/* Phone Number Field */}
+              <FormField>
+                <FormLabel htmlFor="phonenumber">Phone Number</FormLabel>
+                <FormInput
                   id="phonenumber"
                   type="tel"
                   value={userDetails.phonenumber}
-                  onChange={(e) =>
-                    setUserDetails((prev) => ({
-                      ...prev,
-                      phonenumber: e.target.value,
-                    }))
-                  }
-                  className="w-full px-4 py-3 border border-gray-300 placeholder-gray-400 text-gray-900 rounded-lg focus:outline-none focus:ring-primary-green-500 focus:border-primary-green-500 sm:text-sm"
-                  placeholder="+1 (555) 000-0000"
+                  onChange={handleChange("phonenumber")}
+                  placeholder="Phone Number"
+                  disabled={isLoading}
                 />
-              </div>
+              </FormField>
 
-              <div>
-                <label
-                  htmlFor="country"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Country
-                </label>
-                <input
+              {/* Instagram Field */}
+              <FormField>
+                <FormLabel htmlFor="instagram">Instagram</FormLabel>
+                <FormInput
+                  id="instagram"
+                  type="text"
+                  value={userDetails.instagram}
+                  onChange={handleChange("instagram")}
+                  placeholder="@yourusername"
+                  disabled={isLoading}
+                />
+              </FormField>
+
+              {/* Country Field */}
+              <FormField>
+                <FormLabel htmlFor="country">Country</FormLabel>
+                <FormInput
                   id="country"
                   type="text"
                   value={userDetails.country}
-                  onChange={(e) =>
-                    setUserDetails((prev) => ({
-                      ...prev,
-                      country: e.target.value,
-                    }))
-                  }
-                  className="w-full px-4 py-3 border border-gray-300 placeholder-gray-400 text-gray-900 rounded-lg focus:outline-none focus:ring-primary-green-500 focus:border-primary-green-500 sm:text-sm"
-                  placeholder="Your country"
+                  onChange={handleChange("country")}
+                  placeholder="Country"
+                  disabled={isLoading}
                 />
-              </div>
+              </FormField>
 
               <div className="pt-4">
                 <button
                   type="submit"
-                  disabled={isSaving || !hasChanges}
+                  disabled={isSaving || !hasChanges || !userDetails.name.trim()}
                   className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary-green-500 text-white rounded-lg hover:bg-primary-green-600 focus:ring-primary-green-500 focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {isSaving ? (

@@ -4,6 +4,13 @@ import { MarkerMarkerTypeEnum } from "kairos-api-client-ts";
 import { useJourneys } from "@/lib/api/hooks/use-journeys";
 import { Modal } from "@/lib/components/ui/modal";
 import { useModal } from "@/lib/hooks/ui/use-modal";
+import {
+  FormField,
+  FormLabel,
+  FormInput,
+  FormSelect,
+  FormTextarea,
+} from "@/lib/components/ui/form";
 
 interface AddPointModalProps {
   coordinates: number[];
@@ -14,7 +21,7 @@ export function AddPointModal({ coordinates, onConfirm }: AddPointModalProps) {
   const { activeJourney } = useJourneys();
   const { closeModal } = useModal();
   const [formData, setFormData] = useState({
-    type: "plan",
+    marker_type: "plan",
     name: "",
     notes: "",
     estimateTime: "",
@@ -36,11 +43,11 @@ export function AddPointModal({ coordinates, onConfirm }: AddPointModalProps) {
         journey_id: activeJourney?._id || "",
         notes: formData.notes.trim(),
         coordinates: { type: "Point", coordinates } as Coordinates,
-        marker_type: formData.type as MarkerMarkerTypeEnum,
+        marker_type: formData.marker_type as MarkerMarkerTypeEnum,
         estimated_time:
-          formData.type === "plan" ? formData.estimateTime.trim() : undefined,
+          formData.marker_type === "plan" ? formData.estimateTime.trim() : undefined,
         timestamp:
-          formData.type === "past" ? formData.timestamp.trim() : undefined,
+          formData.marker_type === "past" ? formData.timestamp.trim() : undefined,
       };
 
       onConfirm(newPoint);
@@ -77,106 +84,83 @@ export function AddPointModal({ coordinates, onConfirm }: AddPointModalProps) {
       <Modal.Header onClose={closeModal}>Add Journey Point</Modal.Header>
       <Modal.Body>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label
-              htmlFor="name"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
-              Point Name *
-            </label>
-            <input
-              type="text"
+          <FormField>
+            <FormLabel htmlFor="name" required>
+              Point Name
+            </FormLabel>
+            <FormInput
               id="name"
+              type="text"
               name="name"
               value={formData.name}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-green-500 focus:border-primary-green-500"
               placeholder="Enter a name for this point"
-              required
               disabled={isSubmitting}
             />
-          </div>
+          </FormField>
 
-          <div>
-            <label
-              htmlFor="type"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
+          <FormField>
+            <FormLabel htmlFor="marker_type" required>
               Point Type
-            </label>
-            <select
-              id="type"
-              name="type"
-              value={formData.type}
+            </FormLabel>
+            <FormSelect
+              id="marker_type"
+              name="marker_type"
+              value={formData.marker_type}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-green-500 focus:border-primary-green-500"
               disabled={isSubmitting}
             >
+              {" "}
               {pointTypeOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
               ))}
-            </select>
-          </div>
+            </FormSelect>
+          </FormField>
 
-          {formData.type === "plan" && (
-            <div>
-              <label
-                htmlFor="estimateTime"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
-                ETA
-              </label>
-              <input
+          {formData.marker_type === "plan" && (
+            <FormField>
+              <FormLabel htmlFor="estimateTime" required>
+                Estimated Arrival
+              </FormLabel>
+              <FormInput
+                id="estimatedTime"
                 type="Date"
-                id="estimateTime"
                 name="estimateTime"
                 value={formData.estimateTime}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-green-500 focus:border-primary-green-500"
                 disabled={isSubmitting}
               />
-            </div>
+            </FormField>
           )}
-          {formData.type === "past" && (
-            <div>
-              <label
-                htmlFor="timestamp"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
+          {formData.marker_type === "past" && (
+            <FormField>
+              <FormLabel htmlFor="timestamp" required>
                 Date
-              </label>
-              <input
-                type="Date"
+              </FormLabel>
+              <FormInput
                 id="timestamp"
+                type="Date"
                 name="timestamp"
                 value={formData.timestamp}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-green-500 focus:border-primary-green-500"
                 disabled={isSubmitting}
               />
-            </div>
+            </FormField>
           )}
 
-          <div>
-            <label
-              htmlFor="notes"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
-              Notes
-            </label>
-            <textarea
+          <FormField>
+            <FormLabel htmlFor="notes">Notes</FormLabel>
+            <FormTextarea
               id="notes"
               name="notes"
               value={formData.notes}
               onChange={handleInputChange}
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-green-500 focus:border-primary-green-500"
               placeholder="Optional notes"
               disabled={isSubmitting}
             />
-          </div>
+          </FormField>
 
           <div className="bg-gray-50 p-3 rounded-lg">
             <p className="text-sm text-gray-600">
@@ -197,8 +181,9 @@ export function AddPointModal({ coordinates, onConfirm }: AddPointModalProps) {
             </button>
             <button
               type="submit"
+              disabled={isSubmitting || !formData.name.trim() || !(formData.marker_type === "plan" ? formData.estimateTime.trim() : formData.marker_type === "past" ? formData.timestamp.trim() : true)}
               onClick={handleSubmit}
-              className="flex-1 px-4 py-2 bg-primary-green-500 text-white rounded-lg hover:bg-primary-green-600"
+              className="flex-1 px-4 py-2 bg-primary-green-500 text-white rounded-lg hover:bg-primary-green-600 disabled:opacity-50"
             >
               Confirm
             </button>
