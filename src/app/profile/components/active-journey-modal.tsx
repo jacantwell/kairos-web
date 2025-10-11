@@ -16,7 +16,7 @@ export function ActiveJourneyModal({ onConfirm }: ActiveJourneyModalProps) {
   const { closeModal } = useModal();
   const [selected, setSelected] = useState<Journey | null>(null);
 
-  const { journeys } = useJourneys(); 
+  const { journeys } = useJourneys();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,26 +38,24 @@ export function ActiveJourneyModal({ onConfirm }: ActiveJourneyModalProps) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <FormField>
             <FormLabel htmlFor="email">Email address</FormLabel>
-            <FormSelect
-              children={
-                journeys.length > 0 ? (
-                  <div className="grid gap-4">
-                    {journeys.map((journey) => (
-                      <ActiveJourneyCard
-                        key={journey._id}
-                        journey={journey}
-                        selected={selected?._id === journey._id}
-                        onSelect={setSelected}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-gray-500 text-center py-8">
-                    No journeys found.
-                  </p>
-                )
-              }
-            />
+            <FormSelect>
+              {journeys.length > 0 ? (
+                <div className="grid gap-4">
+                  {journeys.map((journey) => (
+                    <ActiveJourneyCard
+                      key={journey._id}
+                      journey={journey}
+                      selected={selected?._id === journey._id}
+                      onSelect={setSelected}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500 text-center py-8">
+                  No journeys found.
+                </p>
+              )}
+            </FormSelect>
           </FormField>
         </form>
       </Modal.Body>

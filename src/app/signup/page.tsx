@@ -8,7 +8,6 @@ import {
   FormField,
   FormLabel,
   FormInput,
-  FormError,
 } from "@/lib/components/ui/form";
 
 export default function RegisterPage() {
