@@ -3,24 +3,69 @@
 import { useState } from "react";
 import { useApi } from "@/lib/api/hooks/use-api";
 import { Logo } from "@/lib/components/ui/logo";
+import { FormField, FormLabel, FormInput } from "@/lib/components/ui/form";
 
 export default function ForgotPasswordPage() {
   const api = useApi();
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const isFormLoading = isLoading;
+  const clearError = () => setErrors({});
   const [email, setEmail] = useState<string>("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Prevent double submission
+    if (isLoading) return;
+
+    // Clear previous errors
+    const newErrors: Record<string, string> = {};
+
+    // Validate required fields
+    if (!email) {
+      newErrors.email = "Email is required";
+      setErrors(newErrors);
+      return;
+    }
+
+    console.log("Submitting forgot password for email:", email);
+    console.log(newErrors);
+
+    clearError();
+    setErrors({});
+    setIsLoading(true);
+
     try {
       await api.users.resetPasswordApiV1UsersResetPasswordPost(email);
-    } catch (error) {
-      console.log(error);
-      setIsLoading(false);
-      return;
+    } catch (err) {
+      // Silently fail for data protection
     } finally {
       setIsLoading(false);
       setIsSubmitted(true);
+    }
+  };
+
+  const handleChange = () => (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
+
+    // Clear error for this field when user starts typing
+    if (errors.email) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors.email;
+        return newErrors;
+      });
+    }
+
+    // Clear form-level error when user starts typing
+    if (errors.form) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors.form;
+        return newErrors;
+      });
     }
   };
 
@@ -35,10 +80,10 @@ export default function ForgotPasswordPage() {
             <h2 className="text-2xl font-bold font-logo text-shark-500 mb-4">
               Check your email
             </h2>
-<p className="text-grey-500 text-sm">
-  If an account with that email exists, we&#39;ve sent a password reset
-  link to it.
-</p>
+            <p className="text-grey-500 text-sm">
+              If an account with that email exists, we&#39;ve sent a password
+              reset link to it.
+            </p>
           </div>
         ) : (
           <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
@@ -52,16 +97,19 @@ export default function ForgotPasswordPage() {
               </p>
             </div>
             <div className="space-y-4">
-              <div>
-                <input
-                  type="email"
-                  required
+              <FormField>
+                <FormLabel htmlFor="email">Email address</FormLabel>
+                <FormInput
+                  id="email"
+                  type="text" // Should be email but there are issues with error displaying.
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-3 border border-grey-300 placeholder-grey-400 text-grey-900 rounded-lg focus:outline-none focus:ring-primary-green-500 focus:border-primary-green-500 sm:text-sm"
-                  placeholder="Email address"
+                  // onChange={(e) => setEmail(e.target.value)}
+                  onChange={handleChange()}
+                  placeholder="Enter your email"
+                  disabled={isFormLoading}
+                  error={!!errors.email}
                 />
-              </div>
+              </FormField>
             </div>
 
             <div>

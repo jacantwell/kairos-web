@@ -4,10 +4,16 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useApi } from "@/lib/api/hooks/use-api";
 import { LogoWithText } from "@/lib/components/ui/logo";
+import {
+  FormField,
+  FormLabel,
+  FormInput,
+  FormError,
+} from "@/lib/components/ui/form";
 
 export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
-  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const api = useApi();
   const router = useRouter();
 
@@ -23,13 +29,37 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    
+    // Clear previous errors
+    const newErrors: Record<string, string> = {};
 
-    if (userDetails.password !== userDetails.confirmed_password) {
-      setPasswordError("Passwords do not match");
-      setIsLoading(false);
+    // Validate required fields
+    if (!userDetails.email.trim()) {
+      newErrors.email = "Email is required";
+    }
+    if (!userDetails.password) {
+      newErrors.password = "Password is required";
+    }
+    if (!userDetails.confirmed_password) {
+      newErrors.confirmed_password = "Please confirm your password";
+    }
+    if (!userDetails.name.trim()) {
+      newErrors.name = "Display name is required";
+    }
+
+    // Validate password match
+    if (userDetails.password && userDetails.confirmed_password && 
+        userDetails.password !== userDetails.confirmed_password) {
+      newErrors.confirmed_password = "Passwords do not match";
+    }
+
+    // If there are errors, set them and stop
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
+
+    setIsLoading(true);
 
     try {
       const signupResponse = await api.users.registerUserApiV1UsersRegisterPost(
@@ -44,8 +74,25 @@ export default function RegisterPage() {
       if (signupResponse.status == 200) {
         router.push("/unverified");
       }
+    } catch (error) {
+      setErrors({ form: "Registration failed. Please try again." });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleChange = (field: keyof typeof userDetails) => (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setUserDetails((prev) => ({ ...prev, [field]: e.target.value }));
+    
+    // Clear error for this field when user starts typing
+    if (errors[field]) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
     }
   };
 
@@ -55,127 +102,117 @@ export default function RegisterPage() {
         <div className="flex justify-center">
           <LogoWithText size="lg" />
         </div>
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          {errors.form && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+              {errors.form}
+            </div>
+          )}
+
           <div className="space-y-4">
-            <div>
-              <input
+            {/* Email Field */}
+            <FormField>
+              <FormLabel htmlFor="email" required>
+                Email Address
+              </FormLabel>
+              <FormInput
+                id="email"
                 type="email"
-                required
                 value={userDetails.email}
-                onChange={(e) =>
-                  setUserDetails((prev) => ({ ...prev, email: e.target.value }))
-                }
-                className="w-full px-4 py-3 border border-grey-300 placeholder-grey-400 text-grey-900 rounded-lg focus:outline-none focus:ring-primary-green-500 focus:border-primary-green-500 sm:text-sm"
+                onChange={handleChange("email")}
                 placeholder="Email address"
+                disabled={isLoading}
+                error={!!errors.email}
               />
-            </div>
-            <div>
-              <input
+            </FormField>
+
+            {/* Password Field */}
+            <FormField>
+              <FormLabel htmlFor="password" required>
+                Password
+              </FormLabel>
+              <FormInput
+                id="password"
                 type="password"
-                required
                 value={userDetails.password}
-                onChange={(e) =>
-                  setUserDetails((prev) => ({
-                    ...prev,
-                    password: e.target.value,
-                  }))
-                }
-                className="w-full px-4 py-3 border border-grey-300 placeholder-grey-400 text-grey-900 rounded-lg focus:outline-none focus:ring-primary-green-500 focus:border-primary-green-500 sm:text-sm"
+                onChange={handleChange("password")}
                 placeholder="Password"
+                disabled={isLoading}
+                error={!!errors.password}
               />
-            </div>
-            <div>
-              <input
+            </FormField>
+
+            {/* Confirm Password Field */}
+            <FormField>
+              <FormLabel htmlFor="confirmed_password" required>
+                Confirm Password
+              </FormLabel>
+              <FormInput
+                id="confirmed_password"
                 type="password"
-                required
                 value={userDetails.confirmed_password}
-                onChange={(e) =>
-                  setUserDetails((prev) => ({
-                    ...prev,
-                    confirmed_password: e.target.value,
-                  }))
-                }
-                className="w-full px-4 py-3 border border-grey-300 placeholder-grey-400 text-grey-900 rounded-lg focus:outline-none focus:ring-primary-green-500 focus:border-primary-green-500 sm:text-sm"
+                onChange={handleChange("confirmed_password")}
                 placeholder="Confirm Password"
+                disabled={isLoading}
+                error={!!errors.confirmed_password}
               />
-            </div>
-            {passwordError && (
-              <div className="text-red-600 text-sm flex items-center gap-2">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zm-1 3a1 1 0 00-.993.883L9 10v3a1 1 0 001.993.117L11 13v-3a1 1 0 00-1-1z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                {passwordError}
-              </div>
-            )}
-            <div>
-              <input
-                type="name"
-                required
+            </FormField>
+
+            {/* Name Field */}
+            <FormField>
+              <FormLabel htmlFor="name" required>
+                Display Name
+              </FormLabel>
+              <FormInput
+                id="name"
+                type="text"
                 value={userDetails.name}
-                onChange={(e) =>
-                  setUserDetails((prev) => ({
-                    ...prev,
-                    name: e.target.value,
-                  }))
-                }
-                className="w-full px-4 py-3 border border-grey-300 placeholder-grey-400 text-grey-900 rounded-lg focus:outline-none focus:ring-primary-green-500 focus:border-primary-green-500 sm:text-sm"
+                onChange={handleChange("name")}
                 placeholder="Display Name"
+                disabled={isLoading}
+                error={!!errors.name}
               />
-            </div>
-            <div>
-              <input
+            </FormField>
+
+            {/* Phone Number Field */}
+            <FormField>
+              <FormLabel htmlFor="phonenumber">Phone Number</FormLabel>
+              <FormInput
+                id="phonenumber"
                 type="tel"
-                required={false}
                 value={userDetails.phonenumber}
-                onChange={(e) =>
-                  setUserDetails((prev) => ({
-                    ...prev,
-                    phonenumber: e.target.value,
-                  }))
-                }
-                className="w-full px-4 py-3 border border-grey-300 placeholder-grey-400 text-grey-900 rounded-lg focus:outline-none focus:ring-primary-green-500 focus:border-primary-green-500 sm:text-sm"
-                placeholder="Phone Number (optional)"
+                onChange={handleChange("phonenumber")}
+                placeholder="Phone Number"
+                disabled={isLoading}
               />
-            </div>
-            <div>
-              <input
+            </FormField>
+
+            {/* Instagram Field */}
+            <FormField>
+              <FormLabel htmlFor="instagram">Instagram</FormLabel>
+              <FormInput
+                id="instagram"
                 type="text"
-                required={false}
                 value={userDetails.instagram}
-                onChange={(e) =>
-                  setUserDetails((prev) => ({
-                    ...prev,
-                    instagram: e.target.value,
-                  }))
-                }
-                className="w-full px-4 py-3 border border-grey-300 placeholder-grey-400 text-grey-900 rounded-lg focus:outline-none focus:ring-primary-green-500 focus:border-primary-green-500 sm:text-sm"
-                placeholder="Instagram (optional)"
+                onChange={handleChange("instagram")}
+                placeholder="@yourusername"
+                disabled={isLoading}
               />
-            </div>
-            <div>
-              <input
+            </FormField>
+
+            {/* Country Field */}
+            <FormField>
+              <FormLabel htmlFor="country">Country</FormLabel>
+              <FormInput
+                id="country"
                 type="text"
-                required={false}
                 value={userDetails.country}
-                onChange={(e) =>
-                  setUserDetails((prev) => ({
-                    ...prev,
-                    country: e.target.value,
-                  }))
-                }
-                className="w-full px-4 py-3 border border-grey-300 placeholder-grey-400 text-grey-900 rounded-lg focus:outline-none focus:ring-primary-green-500 focus:border-primary-green-500 sm:text-sm"
-                placeholder="Country (optional)"
+                onChange={handleChange("country")}
+                placeholder="Country"
+                disabled={isLoading}
               />
-            </div>
+            </FormField>
           </div>
 
           <div>

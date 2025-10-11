@@ -3,9 +3,18 @@
 import { useState } from "react";
 import { Modal } from "@/lib/components/ui/modal";
 import { useModal } from "@/lib/hooks/ui/use-modal";
+import {
+  FormField,
+  FormInput,
+  FormLabel,
+  FormTextarea,
+} from "@/lib/components/ui/form";
 
 interface CreateJourneyModalProps {
-  onConfirm: (journeyData: { name: string; description: string }) => Promise<void>;
+  onConfirm: (journeyData: {
+    name: string;
+    description: string;
+  }) => Promise<void>;
 }
 
 export function CreateJourneyModal({ onConfirm }: CreateJourneyModalProps) {
@@ -13,7 +22,9 @@ export function CreateJourneyModal({ onConfirm }: CreateJourneyModalProps) {
 
   const [formData, setFormData] = useState({ name: "", description: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<{ name?: string; description?: string }>({});
+  const [errors, setErrors] = useState<{ name?: string; description?: string }>(
+    {}
+  );
 
   const validateForm = () => {
     const newErrors: { name?: string; description?: string } = {};
@@ -51,57 +62,42 @@ export function CreateJourneyModal({ onConfirm }: CreateJourneyModalProps) {
 
   return (
     <Modal isOpen={true}>
-      <Modal.Header onClose={closeModal}>
-        Create New Journey
-      </Modal.Header>
+      <Modal.Header onClose={closeModal}>Create New Journey</Modal.Header>
 
       <Modal.Body>
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Name Field */}
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-              Journey Name *
-            </label>
-            <input
-              type="text"
+          <FormField>
+            <FormLabel htmlFor="name" required>
+              Journey Name
+            </FormLabel>
+            <FormInput
               id="name"
-              name="name"
+              type="text"
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-green-500 ${
-                errors.name ? "border-red-300" : "border-gray-300"
-              }`}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
+              placeholder="Give your journey a name"
               disabled={isSubmitting}
-              maxLength={50}
-              placeholder="Enter a name for your journey"
+              error={!!errors.name}
             />
-            {errors.name && (
-              <p className="mt-1 text-sm text-red-600">{errors.name}</p>
-            )}
-          </div>
+          </FormField>
 
           {/* Description Field */}
-          <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
-              Description
-            </label>
-            <textarea
+          <FormField>
+            <FormLabel htmlFor="description">Description</FormLabel>
+            <FormTextarea
               id="description"
-              name="description"
               value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              rows={3}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-green-500 resize-none ${
-                errors.description ? "border-red-300" : "border-gray-300"
-              }`}
-              disabled={isSubmitting}
-              maxLength={200}
+              onChange={(e) =>
+                setFormData({ ...formData, description: e.target.value })
+              }
               placeholder="Optional description of your journey"
+              disabled={isSubmitting}
+              error={!!errors.description}
             />
-            {errors.description && (
-              <p className="mt-1 text-sm text-red-600">{errors.description}</p>
-            )}
-          </div>
+          </FormField>
         </form>
       </Modal.Body>
 
