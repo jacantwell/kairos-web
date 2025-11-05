@@ -18,7 +18,14 @@ export const Logo: React.FC<LogoProps> = ({
 
   return (
     <div className={`inline-flex items-center justify-center gap-4 ${className}`}>
-      <svg
+      {/* Use png image */}
+      <img
+        src="/logo/logo.png"
+        alt="Kairos Logo"
+        width={sizesSVG[size]}
+        height={sizesSVG[size]}
+      />
+      {/* <svg
         fill="#000000"
         height={sizesSVG[size]}
         width={sizesSVG[size]}
@@ -42,7 +49,7 @@ export const Logo: React.FC<LogoProps> = ({
             />
           </g>
         </g>
-      </svg>
+      </svg> */}
     </div>
   );
 };
