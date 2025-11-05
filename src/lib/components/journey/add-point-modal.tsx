@@ -18,7 +18,7 @@ interface AddPointModalProps {
 }
 
 export function AddPointModal({ coordinates, onConfirm }: AddPointModalProps) {
-  const { activeJourney } = useJourneys();
+  const { activeJourneyQuery } = useJourneys();
   const { closeModal } = useModal();
   const [formData, setFormData] = useState({
     marker_type: "plan",
@@ -40,7 +40,7 @@ export function AddPointModal({ coordinates, onConfirm }: AddPointModalProps) {
     try {
       const newPoint: Marker = {
         name: formData.name.trim(),
-        journey_id: activeJourney?._id || "",
+        journey_id: activeJourneyQuery.data?._id || "",
         notes: formData.notes.trim(),
         coordinates: { type: "Point", coordinates } as Coordinates,
         marker_type: formData.marker_type as MarkerMarkerTypeEnum,
