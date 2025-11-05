@@ -2,19 +2,24 @@
 import { useState, useRef, useEffect } from "react";
 import { Journey } from "kairos-api-client-ts";
 import Link from "next/link";
+import {
+  useDeleteJourney,
+  useToggleJourneyActive,
+} from "@/lib/api/hooks/journeys-queries";
 
 interface JourneyCardProps {
   journey: Journey;
-  onDelete: (journeyId: string) => Promise<void>;
-  onToggleActive: (journeyId: string, active: boolean) => Promise<void>;
 }
 
-export function JourneyCard({
-  journey,
-  onDelete,
-  onToggleActive,
-}: JourneyCardProps) {
-  const [isLoading, setIsLoading] = useState(false);
+export function JourneyCard({ journey }: JourneyCardProps) {
+
+  const deleteJourneyMutation = useDeleteJourney();
+  const toggleActiveMutation = useToggleJourneyActive();
+
+  // Get a single loading state from the mutations' `isPending` status.
+  const isLoading =
+    deleteJourneyMutation.isPending || toggleActiveMutation.isPending;
+
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -32,30 +37,19 @@ export function JourneyCard({
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+    }, []);
 
-  const handleToggleActive = async () => {
+  const handleToggleActive = () => {
     if (!journey._id) return;
-
-    setIsLoading(true);
     setShowDropdown(false);
-    try {
-      await onToggleActive(journey._id, !journey.active);
-    } finally {
-      setIsLoading(false);
-    }
+    toggleActiveMutation.mutate(journey._id);
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (!journey._id) return;
-
-    setIsLoading(true);
-    try {
-      await onDelete(journey._id);
-    } finally {
-      setIsLoading(false);
-      setShowDeleteConfirm(false);
-    }
+    deleteJourneyMutation.mutate(journey._id);
+    // You could add an onSuccess callback here to close the modal if needed,
+    // but the invalidation logic is already handled inside the hook.
   };
 
   const formatDate = (dateString: string | undefined) => {
@@ -130,6 +124,7 @@ export function JourneyCard({
 
           {/* Action dropdown */}
           <div className="relative" ref={dropdownRef}>
+            {/* {" "} */}
             <button
               className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
               onClick={() => setShowDropdown(!showDropdown)}
@@ -281,8 +276,9 @@ export function JourneyCard({
             </div>
 
             <p className="text-sm text-gray-600 mb-6">
-              Are you sure you want to delete &#39;<strong>{journey.name}</strong>&#39;?
-              All associated markers and data will be permanently removed.
+              Are you sure you want to delete &#39;
+              <strong>{journey.name}</strong>&#39;? All associated markers and
+              data will be permanently removed.
             </p>
 
             <div className="flex gap-3">

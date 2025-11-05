@@ -1,4 +1,3 @@
-// kairos/src/lib/components/journey/journey-list.tsx
 import { useState } from "react";
 import { Journey } from "kairos-api-client-ts";
 import { JourneyCard } from "./journey-card";
@@ -6,16 +5,12 @@ import { JourneyCard } from "./journey-card";
 interface JourneyListProps {
   journeys: Journey[];
   isLoading: boolean;
-  onDelete: (journeyId: string) => Promise<void>;
-  onToggleActive: (journeyId: string, active: boolean) => Promise<void>;
   onRefresh: () => Promise<void>;
 }
 
 export function JourneyList({ 
   journeys, 
   isLoading, 
-  onDelete, 
-  onToggleActive,
   onRefresh 
 }: JourneyListProps) {
   const [filter, setFilter] = useState<'all' | 'completed'>('all');
@@ -158,8 +153,6 @@ export function JourneyList({
             <JourneyCard
               key={journey._id}
               journey={journey}
-              onDelete={onDelete}
-              onToggleActive={onToggleActive}
             />
           ))}
         </div>
