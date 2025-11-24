@@ -16,15 +16,14 @@ import { useModal } from "@/lib/hooks/ui/use-modal";
 export default function ProfilePage() {
   const { user } = useSession();
   const {
-    journeys,
-    activeJourney,
-    isJourneysLoading,
-    refreshJourneys,
-    addJourney,
-    removeJourney,
-    updateJourney,
-    error: journeysError,
+    journeysQuery,
+    activeJourneyQuery,
+    createJourney,
+    deleteJourney,
+    toggleActive,
   } = useJourneys();
+
+  const isJourneysLoading = journeysQuery.isLoading || journeysQuery.isPending;
 
   const { openModal, modal } = useModal();
 
@@ -32,38 +31,28 @@ export default function ProfilePage() {
   const api = useApi();
 
   const handleSetActiveJourney = async (journeyId: string) => {
+    setError(null);
+
+    // This function used to handle a local state.
+    // This has been removed because it should be possible to
+    // replicate the functionality using tanstack.
+
+    // If there's an active journey, deactivate it first
+    if (activeJourneyQuery.data) {
+      try {
+        await toggleActive.mutateAsync(activeJourneyQuery.data._id || "");
+      } catch (error) {
+        console.error("Error updating point:", error);
+        // Add a toast notification
+      }
+    }
+
     try {
-      setError(null);
-
-      // Optimistically set active
-      journeys.forEach((j) => {
-        updateJourney({ ...j, active: j._id === journeyId });
-      });
-
-      // If there is already an active journey, deactivate it
-      if (activeJourney) {
-        await api.journeys.toggleActiveJourneyApiV1JourneysJourneyIdActivePatch(
-          activeJourney?._id || ""
-        );
-      }
-
-      // Set the selected journey as active
-      const response =
-        await api.journeys.toggleActiveJourneyApiV1JourneysJourneyIdActivePatch(
-          journeyId
-        );
-
-      if (response.status !== 200) {
-        setError("Failed to set active journey");
-        refreshJourneys();
-        return;
-      }
-
-      console.log("Set active journey:", journeyId);
-    } catch (err) {
-      console.error("Failed to set active journey:", err);
+      await toggleActive.mutateAsync(journeyId);
+    } catch (error) {
+      console.error("Error updating point:", error);
       setError("Failed to set active journey");
-      refreshJourneys();
+      // Add a toast notification
     }
   };
 
@@ -71,88 +60,31 @@ export default function ProfilePage() {
     name: string;
     description: string;
   }) => {
-    if (!user?._id) return;
+
+    setError(null);
+
+    // If the user does not have an active journey, create this one in an active state
+    let isActive: boolean;
+    if (!activeJourneyQuery.data) {
+      isActive = true;
+    } else {
+      isActive = false;
+    }
+
+    const newJourney = {
+      name: journeyData.name,
+      description: journeyData.description,
+      user_id: user?._id,
+      active: isActive,
+      created_at: new Date().toISOString(),
+    };
 
     try {
-      setError(null);
-
-      // If the user does not have an active journey, create this one in an active state
-      let isActive: boolean;
-      if (!activeJourney) {
-        isActive = true;
-      } else {
-        isActive = false;
-      }
-
-      const newJourney = {
-        name: journeyData.name,
-        description: journeyData.description,
-        user_id: user._id,
-        active: isActive,
-        created_at: new Date().toISOString(),
-      };
-
-      const response = await api.journeys.createJourneyApiV1JourneysPost(
-        newJourney
-      );
-
-      if (response.data) {
-        addJourney(response.data);
-      }
-    } catch (err) {
-      console.error("Failed to create journey:", err);
+      await createJourney.mutateAsync(newJourney);
+    } catch (error) {
+      console.error("Error updating point:", error);
       setError("Failed to create journey");
-    }
-  };
-
-  const handleDeleteJourney = async (journeyId: string) => {
-    try {
-      setError(null);
-      removeJourney(journeyId);
-
-      const response =
-        await api.journeys.deleteJourneyApiV1JourneysJourneyIdDelete(journeyId);
-
-      if (response.status !== 200) {
-        setError("Failed to delete journey");
-        refreshJourneys();
-        return;
-      }
-
-      console.log("Journey deleted successfully:", journeyId);
-    } catch (err) {
-      console.error("Failed to delete journey:", err);
-      setError("Failed to delete journey");
-      refreshJourneys();
-    }
-  };
-
-  const handleToggleActive = async (journeyId: string, active: boolean) => {
-    try {
-      setError(null);
-
-      const journeyToUpdate = journeys.find((j) => j._id === journeyId);
-      if (!journeyToUpdate) return;
-
-      const updatedJourney = { ...journeyToUpdate, active };
-      updateJourney(updatedJourney);
-
-      const response =
-        await api.journeys.toggleActiveJourneyApiV1JourneysJourneyIdActivePatch(
-          journeyId
-        );
-
-      if (response.status !== 200) {
-        setError("Failed to update journey");
-        refreshJourneys();
-        return;
-      }
-
-      console.log("Toggle active:", journeyId, active);
-    } catch (err) {
-      console.error("Failed to toggle journey active status:", err);
-      setError("Failed to update journey");
-      refreshJourneys();
+      // Add a toast notification
     }
   };
 
@@ -368,10 +300,8 @@ export default function ProfilePage() {
             <div className="p-4 sm:p-6 space-y-4">
               {/* Journey List */}
               <JourneyList
-                journeys={journeys}
+                journeys={journeysQuery.data || []}
                 isLoading={isJourneysLoading}
-                onDelete={handleDeleteJourney}
-                onToggleActive={handleToggleActive}
                 onRefresh={handleRefresh}
               />
 
