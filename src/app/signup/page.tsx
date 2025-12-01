@@ -70,7 +70,7 @@ export default function RegisterPage() {
           country: userDetails.country,
         }
       );
-      if (signupResponse.status == 200) {
+      if (signupResponse.status == 201) {
         router.push("/unverified");
       }
     } catch (error) {
