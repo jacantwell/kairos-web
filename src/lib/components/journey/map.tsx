@@ -21,7 +21,7 @@ import { UpdateUserMarkerModal } from "./update-user-marker-modal";
 
 interface JourneyMapProps {
   journeyMarkers: MarkerType[];
-  nearbyJourneyMarkers: NearbyJourneyMarkers[];
+  nearbyJourneyMarkers: Marker[];
   isAddingPoint: boolean;
   onAddPoint: (point: MarkerType) => void;
   onUpdatePoint?: (id: string, updatedMarker: MarkerType) => void;
@@ -55,15 +55,15 @@ export function JourneyMap({
 
   const { user } = useSession();
 
-  const nearbyMarkers = nearbyJourneyMarkers.flatMap((njm) => njm.markers);
-  const combinedMarkers = [
-    ...journeyMarkers,
-    ...nearbyMarkers.filter(
-      (nm) => !journeyMarkers.some((jm) => jm._id === nm._id)
-    ),
-  ];
+  // const nearbyMarkers = nearbyJourneyMarkers.flatMap((njm) => njm.markers);
+  // const combinedMarkers = [
+  //   ...journeyMarkers,
+  //   ...nearbyMarkers.filter(
+  //     (nm) => !journeyMarkers.some((jm) => jm._id === nm._id)
+  //   ),
+  // ];
   // Process markers into journey routes
-  const routes = processJourneyRoutes(combinedMarkers);
+  const routes = processJourneyRoutes(nearbyJourneyMarkers);
 
   // Auto fit bounds when routes change
   const fitBounds = useCallback(() => {

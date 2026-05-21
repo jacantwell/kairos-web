@@ -1,98 +1,86 @@
 "use client";
 
-import { useUserJourneys } from "./use-user-journeys";
-import { useActiveJourney } from "./use-active-journey";
-import { useJourneyMarkers } from "./use-journey-markers";
-import { useNearbyJourneys } from "./use-nearby-journeys";
-import { useNearbyJourneyMarkers } from "./use-nearby-journey-markers";
+import { useMemo } from "react";
+import { useSession } from "@/lib/context/session-provider";
+import { useUserJourneys as useUserJourneysQuery, useUserActiveJourney } from "./user-queries";
+import {
+  useJourneyMarkers as useJourneyMarkersQuery,
+  useNearbyJourneys as useNearbyJourneysQuery,
+  useCreateJourney,
+  useDeleteJourney,
+  useToggleJourneyActive,
+  useSetJourneyCompleted,
+  useAddMarkerToJourney,
+  useUpdateJourneyMarker,
+  useDeleteJourneyMarker,
+  useNearbyJourneysMarkers,
+} from "./journeys-queries";
 
 export function useJourneys() {
-  const {
-    journeys,
-    isLoading: isJourneysLoading,
-    error: journeysError,
-    loadJourneys,
-    addJourney,
-    removeJourney,
-    updateJourney,
-  } = useUserJourneys();
+  const { user } = useSession();
 
-  const { activeJourney, activeJourneyId, setAsActive, clearActive } =
-    useActiveJourney({ journeys });
+  // Fetch user's journeys
+  const journeysQuery = useUserJourneysQuery(user?._id);
 
-  const {
-    markers: activeJourneyMarkers,
-    isLoading: isMarkersLoading,
-    error: markersError,
-    loadMarkers: loadActiveJourneyMarkers,
-    addMarker: addMarkerToActiveJourney,
-    updateMarker: updateMarkerOfActiveJourney,
-    deleteMarker: deleteMarkerFromActiveJourney,
-  } = useJourneyMarkers(activeJourneyId);
+  // Fetch user's active journey
+  const activeJourneyQuery = useUserActiveJourney(user?._id);
 
-  const {
-    nearbyJourneys: activeJourneyNearbyJourneys,
-    nearbyJourneyIds,
-    isLoading: isNearbyLoading,
-    error: nearbyError,
-    loadNearbyJourneys: loadActiveJourneyNearbyJourneys,
-  } = useNearbyJourneys(activeJourneyId);
+  // Fetch active journey markers
+  const activeJourneyMarkersQuery = useJourneyMarkersQuery(activeJourneyQuery.data?._id);
 
-  const {
-    nearbyJourneyMarkers,
-    isLoading: isNearbyMarkersLoading,
-    error: nearbyMarkersError,
-    loadNearbyJourneyMarkers: loadActiveJourneyNearbyMarkers,
-  } = useNearbyJourneyMarkers(nearbyJourneyIds);
+  // Fetch nearby journeys for active journey
+  const nearbyJourneysQuery = useNearbyJourneysQuery(activeJourneyQuery.data?._id);
 
-  // Combine loading states and errors
-  const isLoading =
-    isJourneysLoading ||
-    isMarkersLoading ||
-    isNearbyLoading ||
-    isNearbyMarkersLoading;
-  const error =
-    journeysError || markersError || nearbyError || nearbyMarkersError;
+  // Extract nearby journey IDs
+  const nearbyJourneyIds = useMemo(
+    () => nearbyJourneysQuery.data?.map((j: any) => j._id) ?? [],
+    [nearbyJourneysQuery.data]
+  );
+
+  // Fetch all markers for nearby journeys in a single query
+  const nearbyMarkersQuery = useNearbyJourneysMarkers(
+    activeJourneyQuery.data?._id
+  );
+
+  const nearbyMarkersData = nearbyMarkersQuery.data ?? [];
+
+  // Journey mutations
+  const createJourney = useCreateJourney();
+  const deleteJourney = useDeleteJourney();
+  const toggleActive = useToggleJourneyActive();
+  const setCompleted = useSetJourneyCompleted();
+
+  // Marker mutations
+  const addMarker = useAddMarkerToJourney();
+  const updateMarker = useUpdateJourneyMarker();
+  const deleteMarker = useDeleteJourneyMarker();
 
   return {
-    // Journey data
-    journeys,
-    activeJourney,
-    activeJourneyMarkers,
-    activeJourneyNearbyJourneys,
-    nearbyJourneyMarkers,
-
-    // Loading states
-    isLoading,
-    isJourneysLoading,
-    isMarkersLoading,
-    isNearbyLoading,
-    isNearbyMarkersLoading,
-
-    // Errors
-    error,
-    journeysError,
-    markersError,
-    nearbyError,
-    nearbyMarkersError,
-
-    // Journey operations
-    loadJourneys,
-    refreshJourneys: loadJourneys,
-    addJourney,
-    removeJourney,
-    updateJourney,
-    setAsActive,
-    clearActive,
-
-    // Marker operations
-    refreshActiveJourneyMarkers: loadActiveJourneyMarkers,
-    addMarkerToActiveJourney,
-    updateMarkerOfActiveJourney,
-    deleteMarkerFromActiveJourney,
-
-    // Nearby journey operations
-    refreshActiveJourneyNearbyJourneys: loadActiveJourneyNearbyJourneys,
-    refreshActiveJourneyNearbyMarkers: loadActiveJourneyNearbyMarkers,
+    // Journey queries
+    journeysQuery,
+    
+    // Active journey query
+    activeJourneyQuery,
+    activeJourneyMarkersQuery,
+    
+    // Marker queries
+    useJourneyMarkersQuery,
+    
+    // Nearby journey queries
+    nearbyJourneysQuery,
+    nearbyJourneyIds,
+    nearbyMarkersQuery,
+    nearbyMarkersData,
+    
+    // Journey mutations
+    createJourney,
+    deleteJourney,
+    toggleActive,
+    setCompleted,
+    
+    // Marker mutations
+    addMarker,
+    updateMarker,
+    deleteMarker,
   };
 }

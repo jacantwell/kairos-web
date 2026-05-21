@@ -12,19 +12,37 @@ export default function HomePage() {
   const [isAddingPoint, setIsAddingPoint] = useState(false);
 
   const {
-    activeJourney,
-    activeJourneyMarkers,
-    nearbyJourneyMarkers,
-    addMarkerToActiveJourney,
-    refreshActiveJourneyNearbyJourneys,
-    refreshActiveJourneyMarkers,
-    updateMarkerOfActiveJourney,
-    deleteMarkerFromActiveJourney,
-    isLoading,
-    error,
+    activeJourneyQuery,
+    activeJourneyMarkersQuery,
+    nearbyMarkersData,
+    nearbyJourneysQuery,
+    addMarker,
+    updateMarker,
+    deleteMarker,
   } = useJourneys();
 
-  console.log("nearbyJourneyMarkers", nearbyJourneyMarkers);
+  // Extract data from queries
+  const activeJourney = activeJourneyQuery.data;
+  const activeJourneyMarkers = activeJourneyMarkersQuery.data ?? [];
+  const nearbyJourneyMarkers = nearbyMarkersData;
+
+  // Combine loading states - including initial loading
+  const isLoading = 
+    activeJourneyQuery.isLoading || 
+    activeJourneyQuery.isPending ||
+    activeJourneyMarkersQuery.isLoading;
+
+  // Combine errors
+  const error = activeJourneyQuery.error || activeJourneyMarkersQuery.error;
+
+  console.log("Debug data:")
+  console.table({
+    isLoading: activeJourneyQuery.isLoading,
+    isPending: activeJourneyQuery.isPending,
+    isFetching: activeJourneyQuery.isFetching,
+    data: activeJourneyQuery.data,
+    error: activeJourneyQuery.error,
+  });
 
   const handleAddPoint = async (point: Marker) => {
     if (!activeJourney?._id) {
@@ -36,8 +54,15 @@ export default function HomePage() {
 
     try {
       console.log("Adding point to journey:", activeJourney._id, point);
-      await addMarkerToActiveJourney(point);
-      refreshActiveJourneyNearbyJourneys();
+      
+      await addMarker.mutateAsync({
+        journeyId: activeJourney._id,
+        data: point,
+      });
+
+      // Refetch nearby journeys after adding marker
+      nearbyJourneysQuery.refetch();
+      
       console.log("Point added successfully");
     } catch (error) {
       console.error("Error adding point:", error);
@@ -59,8 +84,13 @@ export default function HomePage() {
     }
 
     try {
-      await deleteMarkerFromActiveJourney(id);
-      refreshActiveJourneyNearbyJourneys();
+      await deleteMarker.mutateAsync({
+        journeyId: activeJourney._id,
+        markerId: id,
+      });
+
+      // Refetch nearby journeys after deleting marker
+      nearbyJourneysQuery.refetch();
     } catch (error) {
       console.error("Error deleting point:", error);
     }
@@ -68,7 +98,7 @@ export default function HomePage() {
 
   const handleUpdatePoint = async (id: string, updatedMarker: Marker) => {
     if (!activeJourney?._id || !id || id.startsWith("temp-")) {
-      console.warn("Cannot delete point: invalid ID or no active journey");
+      console.warn("Cannot update point: invalid ID or no active journey");
       return;
     }
 
@@ -78,11 +108,15 @@ export default function HomePage() {
     }
 
     try {
-      await updateMarkerOfActiveJourney(id, updatedMarker);
-      refreshActiveJourneyMarkers();
-      console.log("Point deleted:", id);
+      await updateMarker.mutateAsync({
+        journeyId: activeJourney._id,
+        markerId: id,
+        data: updatedMarker,
+      });
+
+      console.log("Point updated:", id);
     } catch (error) {
-      console.error("Error deleting point:", error);
+      console.error("Error updating point:", error);
       // Add a toast notification
     }
   };
@@ -109,7 +143,7 @@ export default function HomePage() {
                       clipRule="evenodd"
                     />
                   </svg>
-                  Failed to load journey data: {error}
+                  Failed to load journey data: {error.message}
                 </div>
               </div>
             )}
@@ -164,6 +198,12 @@ export default function HomePage() {
                                 Saving...
                               </span>
                             )}
+                            {/* Show mutation loading state */}
+                            {deleteMarker.isPending && (
+                              <span className="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded">
+                                Deleting...
+                              </span>
+                            )}
                           </div>
                           {point.notes && (
                             <p className="text-sm text-gray-500 mt-1">
@@ -181,16 +221,18 @@ export default function HomePage() {
                         <button
                           onClick={() => handleDeletePoint(point._id || "")}
                           className={`p-1 ml-4 transition-colors ${
-                            isTemporary
+                            isTemporary || deleteMarker.isPending
                               ? "text-gray-300 cursor-not-allowed"
                               : "text-red-500 hover:text-red-700"
                           }`}
                           title={
                             isTemporary
                               ? "Cannot delete unsaved point"
+                              : deleteMarker.isPending
+                              ? "Deleting..."
                               : "Delete point"
                           }
-                          disabled={isTemporary}
+                          disabled={isTemporary || deleteMarker.isPending}
                         >
                           <svg
                             className="w-5 h-5"
@@ -214,7 +256,7 @@ export default function HomePage() {
             )}
 
             {/* No Active Journey Message */}
-            {!isLoading && !activeJourney && !error && (
+            {/* {!isLoading && !activeJourney && !error && (
               <div className="mt-6 bg-white rounded-lg shadow p-6 text-center">
                 <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                   <svg
@@ -244,7 +286,7 @@ export default function HomePage() {
                   Manage Journeys
                 </a>
               </div>
-            )}
+            )} */}
           </div>
         </main>
       </div>

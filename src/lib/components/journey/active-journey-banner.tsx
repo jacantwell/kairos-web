@@ -12,7 +12,9 @@ export function ActiveJourneyBanner({
   isAddingPoint,
   setIsAddingPoint,
 }: ActiveJourneyBannerProps) {
-  const { activeJourney, isJourneysLoading, isMarkersLoading } = useJourneys();
+  const { activeJourneyQuery, activeJourneyMarkersQuery } = useJourneys();
+
+  const activeJourneyLoading = activeJourneyQuery.isLoading || activeJourneyQuery.isPending;
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -34,9 +36,9 @@ export function ActiveJourneyBanner({
     return `Starts in ${Math.abs(diffDays)} days`;
   };
 
-  if (isJourneysLoading) {
+  if (activeJourneyLoading) {
     return <LoadingCard />;
-  } else if (!isJourneysLoading && !activeJourney) {
+  } else if (!activeJourneyLoading && !activeJourneyQuery.data) {
     return (
       <div className="bg-gradient-to-r from-primary-green-500 to-primary-green-600 text-white rounded-lg shadow-md overflow-hidden">
         <div className="px-6 py-4">
@@ -47,7 +49,7 @@ export function ActiveJourneyBanner({
         </div>
       </div>
     );
-  } else if (activeJourney) {
+  } else if (activeJourneyQuery.data) {
     return (
       <div className="bg-primary-green-500 text-white rounded-lg overflow-hidden">
         <div className="px-6 py-4">
@@ -63,13 +65,13 @@ export function ActiveJourneyBanner({
                 </div>
                 <div className="h-4 w-px bg-green-300"></div>
                 <span className="text-green-100 text-sm">
-                  {getDaysAgo(activeJourney.created_at || "")}
+                  {getDaysAgo(activeJourneyQuery.data.created_at || "")}
                 </span>
               </div>
 
               {/* Journey name */}
               <h2 className="text-xl font-bold text-white mb-2 truncate">
-                {activeJourney.name}
+                {activeJourneyQuery.data.name}
               </h2>
 
               {/* Journey details */}
@@ -89,15 +91,15 @@ export function ActiveJourneyBanner({
                     />
                   </svg>
                   <span className="text-sm">
-                    Started {formatDate(activeJourney.created_at || "")}
+                    Started {formatDate(activeJourneyQuery.data.created_at || "")}
                   </span>
                 </div>
               </div>
 
               {/* Description */}
-              {activeJourney.description && (
+              {activeJourneyQuery.data.description && (
                 <p className="mt-3 text-green-50 text-sm leading-relaxed line-clamp-2">
-                  {activeJourney.description}
+                  {activeJourneyQuery.data.description}
                 </p>
               )}
             </div>
@@ -113,7 +115,7 @@ export function ActiveJourneyBanner({
                       : "bg-primary-green-500 text-white hover:bg-primary-green-600"
                   }`}
                 >
-                  {isMarkersLoading ? (
+                  {(activeJourneyMarkersQuery.isLoading || activeJourneyMarkersQuery.isPending) ? (
                     <div className="p-1">
                       <div className="w-3 h-3 border-2 border-white border-t-transparent border-b-transparent rounded-full animate-spin"></div>
                     </div>
